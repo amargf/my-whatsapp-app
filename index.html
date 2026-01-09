@@ -20,22 +20,33 @@
 
         /* واجهات الـ Overlay */
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .custom-btn { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 25px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
+        .custom-btn { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 25px; font-size: 16px; cursor: pointer; font-weight: bold; }
         .btn-green { background-color: #00a884; color: white; }
         .btn-blue { background-color: #34b7f1; color: white; }
         .btn-gray { background-color: #3b4a54; color: white; }
         .hidden { display: none !important; }
-        .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; outline: none; }
+        .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; }
         
-        .game-btn { background: #323739; color: #ffd700; border: 1px solid #ffd700; font-size: 14px; }
+        /* تصميم واجهة اللعبة داخل التطبيق */
+        #game-view { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; }
+        #game-frame { flex: 1; border: none; width: 100%; height: 100%; }
+        .game-header { background: #202c33; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
+<div id="game-view">
+    <div class="game-header">
+        <span style="color: #ffd700; font-weight: bold;">🎮 جاري اللعب الآن</span>
+        <button onclick="closeGame()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 15px; cursor:pointer;">إغلاق X</button>
+    </div>
+    <iframe id="game-frame" src=""></iframe>
+</div>
+
 <div id="overlay">
     <div id="step-name" class="modal-card">
-        <h2 style="color: #00a884;">أهلاً بك</h2>
+        <h2>أهلاً بك</h2>
         <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
         <button class="custom-btn btn-green" onclick="saveUsername()">متابعة</button>
     </div>
@@ -57,7 +68,7 @@
     <div id="step-games" class="modal-card hidden">
         <h2 style="color: #ffd700;">🎮 قائمة الألعاب</h2>
         <div style="margin: 15px 0;">
-            <button class="custom-btn game-btn" onclick="window.open('http://www.appcreator24.com/intra/app_sec_game_preview.php?idioma=en&idsesion=pwy4fd5h2gat8c6ibqsmle097joknr3zu1xv&idg=1&ckp=8rwmciks4a617d2v9yxzeltfnpjb5h0oq3gu@1633713@0', '_blank')">🕹️ ابدأ اللعبة الآن</button>
+            <button class="custom-btn btn-green" onclick="openGame('http://www.appcreator24.com/intra/app_sec_game_preview.php?idioma=en&idsesion=pwy4fd5h2gat8c6ibqsmle097joknr3zu1xv&idg=1&ckp=8rwmciks4a617d2v9yxzeltfnpjb5h0oq3gu@1633713@0')">🕹️ ابدأ لعبتك المفضلة</button>
         </div>
         <button class="custom-btn btn-gray" onclick="showStepChoice()">عودة للقائمة</button>
     </div>
@@ -116,6 +127,17 @@
     function showGamesMenu() {
         document.getElementById('step-choice').classList.add('hidden');
         document.getElementById('step-games').classList.remove('hidden');
+    }
+
+    // وظائف تشغيل وإغلاق اللعبة
+    function openGame(url) {
+        document.getElementById('game-frame').src = url;
+        document.getElementById('game-view').style.display = 'flex';
+    }
+
+    function closeGame() {
+        document.getElementById('game-view').style.display = 'none';
+        document.getElementById('game-frame').src = "";
     }
 
     function joinPrivate() {
