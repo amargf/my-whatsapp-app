@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ماسنجر برو - التصميم الحديث</title>
+    <title>ماسنجر برو - واجهة محسنة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.2s ease; }
         
-        /* الألوان الجديدة - أزرق ليلي مريح */
         :root {
-            --bg-main: #18191a; /* خلفية الفيس بوك المظلمة */
-            --bg-chat: #242526; /* خلفية الفقاعات المستلمة */
-            --accent: #0084ff;  /* لون الماسنجر الأساسي */
+            --bg-main: #18191a; 
+            --bg-chat: #242526; 
+            --accent: #0084ff;  
             --text-main: #e4e6eb;
             --input-bg: #3a3b3c;
         }
@@ -28,7 +27,6 @@
 
         body { display: flex; flex-direction: column; }
 
-        /* هيدر أنيق بتأثير ضبابي */
         header { 
             height: 60px;
             background: rgba(36, 37, 38, 0.9);
@@ -43,7 +41,6 @@
         .header-info h1 { font-size: 17px; font-weight: 600; }
         .status { font-size: 11px; color: #31a24c; }
 
-        /* منطقة الدردشة */
         #chat-box { 
             flex: 1; 
             overflow-y: auto; 
@@ -54,7 +51,6 @@
             background-image: linear-gradient(to bottom, #18191a, #101112);
         }
 
-        /* فقاعات الرسائل المحسنة */
         .message { 
             max-width: 75%; 
             padding: 10px 16px; 
@@ -62,7 +58,6 @@
             font-size: 15px; 
             line-height: 1.4;
             position: relative;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
         .sent { 
             align-self: flex-end; 
@@ -78,7 +73,6 @@
         }
         .user-label { font-size: 11px; color: #b0b3b8; margin-bottom: 2px; margin-right: 8px; }
 
-        /* شريط الكتابة الثابت والجميل */
         footer { 
             padding: 12px 15px; 
             background: var(--bg-main); 
@@ -108,20 +102,21 @@
         }
 
         .btn-action { color: var(--accent); font-size: 20px; cursor: pointer; background: none; border: none; padding: 5px; }
-        .btn-action:hover { transform: scale(1.1); }
         .btn-send { font-size: 24px; }
 
-        /* واجهة الدخول المحدثة */
+        /* واجهة الدخول مع الأيقونات الجديدة */
         #overlay { position: fixed; inset: 0; background: #18191a; z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .login-card { width: 85%; max-width: 350px; text-align: center; }
-        .m-input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #3e4042; background: #242526; color: white; text-align: center; }
-        .m-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .input-group { position: relative; width: 100%; }
+        .input-group i { position: absolute; right: 15px; top: 25px; color: #888; }
+        .m-input { width: 100%; padding: 14px 40px 14px 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #3e4042; background: #242526; color: white; }
+        .m-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         .hidden { display: none !important; }
         .recording-active { color: #f3425f !important; animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.4; } }
         .msg-img { max-width: 100%; border-radius: 15px; margin-top: 5px; }
-        audio { height: 35px; width: 170px; filter: contrast(1.1); margin-top: 5px; }
+        audio { height: 35px; width: 170px; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -129,17 +124,32 @@
 <div id="overlay">
     <div id="step-name" class="login-card">
         <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Facebook_Messenger_logo_2020.svg" width="80" style="margin-bottom: 20px;">
-        <h2 style="margin-bottom: 10px;">أهلاً بك مرة أخرى</h2>
-        <input type="text" id="username-input" class="m-input" placeholder="اكتب اسمك للمتابعة">
-        <button class="m-btn" onclick="saveUsername()">تسجيل الدخول</button>
+        <h2 style="margin-bottom: 20px;">مرحباً بك</h2>
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" id="username-input" class="m-input" placeholder="اكتب اسمك للمتابعة">
+        </div>
+        <button class="m-btn" onclick="saveUsername()">دخول <i class="fas fa-arrow-left"></i></button>
     </div>
+
     <div id="step-choice" class="login-card hidden">
-        <button class="m-btn" onclick="showPrivateForm()">دخول الغرفة المشفرة</button>
+        <i class="fas fa-shield-halved" style="font-size: 50px; color: var(--accent); margin-bottom: 20px;"></i>
+        <h2 style="margin-bottom: 20px;">تأمين الدردشة</h2>
+        <button class="m-btn" onclick="showPrivateForm()"><i class="fas fa-door-closed"></i> دخول الغرفة المشفرة</button>
     </div>
+
     <div id="step-private" class="login-card hidden">
-        <input type="text" id="room-name-input" class="m-input" placeholder="اسم الغرفة">
-        <input type="password" id="room-pass-input" class="m-input" placeholder="كلمة السر">
-        <button class="m-btn" onclick="joinPrivate()">دخول الآن</button>
+        <i class="fas fa-lock" style="font-size: 40px; color: #f3425f; margin-bottom: 15px;"></i>
+        <h2 style="margin-bottom: 20px;">بيانات الغرفة</h2>
+        <div class="input-group">
+            <i class="fas fa-hashtag"></i>
+            <input type="text" id="room-name-input" class="m-input" placeholder="اسم الغرفة">
+        </div>
+        <div class="input-group">
+            <i class="fas fa-key"></i>
+            <input type="password" id="room-pass-input" class="m-input" placeholder="كلمة السر">
+        </div>
+        <button class="m-btn" onclick="joinPrivate()">تأكيد الدخول <i class="fas fa-check-circle"></i></button>
     </div>
 </div>
 
