@@ -3,78 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>واتساب العرب - الإصلاح الشامل</title>
+    <title>واتساب العرب - النسخة الأصلية</title>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background-color: #0b141a; color: white; font-family: sans-serif; overflow: hidden; }
         #app-wrapper { display: flex; flex-direction: column; height: 100vh; position: relative; }
-        header { background-color: #202c33; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; z-index: 100; border-bottom: 1px solid #3b4a54; }
+        header { background-color: #202c33; padding: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; }
         
-        /* منطقة الدردشة مع دعم التمرير اليدوي */
         #chat-box { 
-            flex: 1; overflow-y: scroll; -webkit-overflow-scrolling: touch; 
+            flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; 
             padding: 15px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
             background-color: rgba(11, 20, 26, 0.9); background-blend-mode: overlay;
-            display: flex; flex-direction: column; scroll-behavior: smooth;
+            display: flex; flex-direction: column;
         }
 
-        /* أزرار الصعود والنزول اليدوية */
-        .scroll-controls { position: fixed; left: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
-        .scroll-btn { background: rgba(0, 168, 132, 0.7); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; }
+        .message { max-width: 80%; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 15px; line-height: 1.4; }
+        .sent { align-self: flex-end; background-color: #005c4b; border-bottom-right-radius: 2px; }
+        .received { align-self: flex-start; background-color: #202c33; border-bottom-left-radius: 2px; }
+        .user-label { color: #ffd700; font-weight: bold; font-size: 12px; margin-bottom: 4px; display: block; }
 
-        .message { max-width: 80%; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 15px; }
-        .sent { align-self: flex-end; background-color: #005c4b; }
-        .received { align-self: flex-start; background-color: #202c33; }
-        .msg-img { max-width: 100%; border-radius: 8px; margin-top: 5px; border: 1px solid #3b4a54; }
-        
-        .download-btn { display: block; background: #25d366; color: white !important; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 8px; border: 1px solid white; }
-
-        footer { background: #202c33; padding: 10px; display: flex; gap: 10px; align-items: center; }
-        #msgInput { flex: 1; padding: 12px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; }
-        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; font-size: 20px; }
+        footer { background: #202c33; padding: 12px; display: flex; gap: 10px; align-items: center; }
+        #msgInput { flex: 1; padding: 12px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
+        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 50px; height: 50px; color: white; font-size: 22px; cursor: pointer; }
 
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .modal-card { background: #222e35; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
-        .custom-btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 25px; border: none; background: #00a884; color: white; font-weight: bold; }
+        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; width: 85%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
+        .custom-btn { width: 100%; padding: 14px; margin-top: 15px; border-radius: 30px; border: none; background: #00a884; color: white; font-weight: bold; font-size: 16px; }
         .hidden { display: none !important; }
-        .modern-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; }
+        .modern-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; font-size: 16px; }
     </style>
 </head>
 <body>
 
 <div id="overlay">
     <div id="step-name" class="modal-card">
-        <h3>واتساب العرب</h3>
+        <h3>مرحباً بك</h3>
         <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
         <button class="custom-btn" onclick="saveUsername()">دخول</button>
     </div>
     <div id="step-choice" class="modal-card hidden">
         <h3>اختر المحادثة</h3>
         <button class="custom-btn" onclick="joinPublic()">الشات العام</button>
-        <button class="custom-btn" style="background:#202c33; border:1px solid #00a884;" onclick="showPrivateForm()">غرفة خاصة</button>
+        <button class="custom-btn" style="background:#202c33; border:1px solid #00a884; color:#00a884; margin-top:15px;" onclick="showPrivateForm()">غرفة خاصة</button>
     </div>
     <div id="step-private" class="modal-card hidden">
         <h3>بيانات الغرفة</h3>
         <input type="text" id="room-name-input" class="modern-input" placeholder="اسم الغرفة">
         <input type="password" id="room-pass-input" class="modern-input" placeholder="كلمة السر">
         <button class="custom-btn" onclick="joinPrivate()">دخول</button>
-        <button onclick="backToChoice()" style="background:none; border:none; color:#8696a0; margin-top:10px;">رجوع</button>
+        <button onclick="backToChoice()" style="background:none; border:none; color:#8696a0; margin-top:15px; cursor:pointer;">رجوع</button>
     </div>
 </div>
 
 <div id="app-wrapper">
-    <div class="scroll-controls">
-        <button class="scroll-btn" onclick="manualScroll(-200)">🔼</button>
-        <button class="scroll-btn" onclick="manualScroll(200)">🔽</button>
-    </div>
     <header>
-        <button onclick="logout()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:6px 15px; font-weight:bold;">خروج</button>
-        <div id="room-display">الرئيسية</div>
+        <button onclick="logout()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:8px 15px; font-weight:bold; cursor:pointer;">خروج</button>
+        <div id="room-display" style="font-weight:bold;">الرئيسية</div>
         <div style="width:40px"></div>
     </header>
     <div id="chat-box"></div>
     <footer>
-        <button onclick="sendImageUrl()" style="background:none; border:none; font-size:24px;">🖼️</button>
         <input type="text" id="msgInput" placeholder="اكتب رسالة...">
         <button class="send-btn" onclick="sendMessage()">➤</button>
     </footer>
@@ -89,7 +77,10 @@
     let currentUsername = localStorage.getItem("chat_user");
     let messagesRef = null;
 
-    if(currentUsername) { document.getElementById('step-name').classList.add('hidden'); document.getElementById('step-choice').classList.remove('hidden'); }
+    if(currentUsername) {
+        document.getElementById('step-name').classList.add('hidden');
+        document.getElementById('step-choice').classList.remove('hidden');
+    }
 
     function saveUsername() {
         const val = document.getElementById('username-input').value.trim();
@@ -97,14 +88,20 @@
     }
     function showPrivateForm() { document.getElementById('step-choice').classList.add('hidden'); document.getElementById('step-private').classList.remove('hidden'); }
     function backToChoice() { document.getElementById('step-private').classList.add('hidden'); document.getElementById('step-choice').classList.remove('hidden'); }
-    function logout() { if(messagesRef) messagesRef.off(); document.getElementById("chat-box").innerHTML = ""; document.getElementById("overlay").classList.remove("hidden"); document.getElementById('step-choice').classList.remove('hidden'); }
-
-    function manualScroll(offset) { document.getElementById('chat-box').scrollBy(0, offset); }
+    
+    function logout() {
+        if(messagesRef) messagesRef.off();
+        document.getElementById("chat-box").innerHTML = "";
+        document.getElementById("overlay").classList.remove("hidden");
+        document.getElementById('step-choice').classList.remove('hidden');
+    }
 
     function joinPublic() { document.getElementById("overlay").classList.add("hidden"); setupChat("الشات العام", "public_chat"); }
+    
     function joinPrivate() {
         let roomName = document.getElementById('room-name-input').value.trim() || "عام";
         let roomPass = document.getElementById('room-pass-input').value.trim();
+        if(!roomPass) return;
         const roomRef = firebase.database().ref("room_settings/" + roomName);
         roomRef.once('value').then((snapshot) => {
             const data = snapshot.val();
@@ -112,7 +109,7 @@
             if (!data || data.password === roomPass) {
                 if(!data) roomRef.set({ password: roomPass });
                 setupChat("غرفة: " + roomName, "private_" + roomName);
-            } else { setupChat("غرفة: " + roomName, "fake_room"); }
+            } else { setupChat("غرفة: " + roomName, "error_room"); }
         });
     }
 
@@ -124,12 +121,7 @@
             const chatBox = document.getElementById("chat-box");
             const msgDiv = document.createElement("div");
             msgDiv.className = `message ${data.user === currentUsername ? 'sent' : 'received'}`;
-            let content = `<small style="color:yellow">${data.user}</small><br>`;
-            if(data.type === 'image') {
-                content += `<img src="${data.url}" class="msg-img">
-                            <a href="${data.url}" target="_blank" class="download-btn">فتح في المتصفح 📥</a>`;
-            } else { content += data.text; }
-            msgDiv.innerHTML = content;
+            msgDiv.innerHTML = `<span class="user-label">${data.user}</span>${data.text}`;
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
@@ -137,13 +129,14 @@
 
     function sendMessage() {
         const input = document.getElementById("msgInput");
-        if (input.value.trim() !== "" && messagesRef) { messagesRef.push({ user: currentUsername, text: input.value, type: 'text' }); input.value = ""; }
+        if (input.value.trim() !== "" && messagesRef) {
+            messagesRef.push({ user: currentUsername, text: input.value });
+            input.value = "";
+        }
     }
-    function sendImageUrl() {
-        const url = prompt("الصق رابط الصورة هنا:");
-        if(url && messagesRef) { messagesRef.push({ user: currentUsername, url: url, type: 'image' }); }
-    }
+
     document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
 </script>
 </body>
-</html>
+    </html>
+    
