@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>واتساب العرب - التمويه الذكي</title>
+    <title>واتساب العرب - الشامل</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #0b141a; margin: 0; display: flex; flex-direction: column; height: 100vh; color: white; }
         header { background-color: #202c33; padding: 15px; text-align: center; border-bottom: 1px solid #3b4a54; }
-        #room-status { font-size: 14px; color: #00a884; margin-top: 5px; }
+        #room-display { font-size: 14px; color: #00a884; margin-top: 5px; font-weight: bold; }
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); }
-        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; }
+        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; word-wrap: break-word; }
         .sent { align-self: flex-end; background-color: #005c4b; }
         .received { align-self: flex-start; background-color: #202c33; }
         footer { background: #202c33; padding: 10px; display: flex; gap: 8px; }
@@ -21,7 +21,7 @@
 
 <header>
     <div>واتساب العرب</div>
-    <div id="room-display">جاري الدخول...</div>
+    <div id="room-display">جاري التحميل...</div>
 </header>
 
 <div id="chat-box"></div>
@@ -40,33 +40,37 @@
     };
     firebase.initializeApp(firebaseConfig);
 
-    let username = localStorage.getItem("chat_user") || prompt("أدخل اسمك:") || "مستخدم";
+    let username = localStorage.getItem("chat_user") || prompt("أدخل اسمك المستعار:") || "عضو";
     localStorage.setItem("chat_user", username);
 
-    let roomName = prompt("أدخل اسم الغرفة:") || "عام";
-    let roomPass = prompt("أدخل كلمة السر:");
+    // سؤال المستخدم: عام أم خاص؟
+    let choice = prompt("اكتب (1) للشات العام \nاكتب (2) لغرفة خاصة بكلمة سر");
 
-    const roomRef = firebase.database().ref("room_settings/" + roomName);
-
-    roomRef.once('value').then((snapshot) => {
-        const data = snapshot.val();
+    if (choice === "1") {
+        // الشات العام: مسار ثابت للجميع بدون كلمة سر
+        setupChat("الشات العام", "public_chat");
+    } else {
+        // الغرفة الخاصة: نفس نظام التمويه السابق
+        let roomName = prompt("أدخل اسم الغرفة الخاصة:") || "عام";
+        let roomPass = prompt("أدخل كلمة السر لهذه الغرفة:");
         
-        if (!data) {
-            // إنشاء الغرفة الأصلية لأول مرة
-            roomRef.set({ password: roomPass });
-            setupChat(roomName, roomName); 
-        } else if (data.password === roomPass) {
-            // دخول الغرفة الأصلية (كلمة سر صحيحة)
-            setupChat(roomName, roomName);
-        } else {
-            // التمويه: يظهر له اسم الغرفة "تنس" لكنه في مسار "تنس_خفي_كلمةالسر"
-            // هكذا لن يرى الرسائل الحقيقية أبداً
-            setupChat(roomName, roomName + "_hidden_" + roomPass);
-        }
-    });
+        const roomRef = firebase.database().ref("room_settings/" + roomName);
+        roomRef.once('value').then((snapshot) => {
+            const data = snapshot.val();
+            if (!data) {
+                roomRef.set({ password: roomPass });
+                setupChat("غرفة: " + roomName, "private_" + roomName);
+            } else if (data.password === roomPass) {
+                setupChat("غرفة: " + roomName, "private_" + roomName);
+            } else {
+                // التمويه: يدخل غرفة وهمية بنفس الاسم
+                setupChat("غرفة: " + roomName, "fake_" + roomName + "_" + roomPass);
+            }
+        });
+    }
 
     function setupChat(displayName, dbPath) {
-        document.getElementById("room-display").innerText = "غرفة: " + displayName;
+        document.getElementById("room-display").innerText = displayName;
         const messagesRef = firebase.database().ref("messages/" + dbPath);
 
         window.sendMessage = function() {
