@@ -3,61 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>واتساب العرب - نسخة المتصفح</title>
+    <title>واتساب العرب - نسخة الصور</title>
     <style>
-        /* إصلاح الهيكل لضمان ظهور العناصر في المتصفح */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #0b141a; display: flex; flex-direction: column; color: white; }
-        
         header { background-color: #202c33; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; }
-        
-        /* منطقة الدردشة المرنة */
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: rgba(11, 20, 26, 0.9); background-blend-mode: overlay; }
-        
         .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; word-wrap: break-word; }
         .sent { align-self: flex-end; background-color: #005c4b; }
         .received { align-self: flex-start; background-color: #202c33; }
-        .msg-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
-
-        /* تثبيت شريط الإرسال في الأسفل بقوة */
-        footer { background: #202c33; padding: 12px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; position: relative; bottom: 0; width: 100%; box-sizing: border-box; }
         
-        #msgInput { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
-        .icon-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #8696a0; padding: 0 5px; }
-        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }
+        /* تنسيق الصور لتكون قابلة للفتح */
+        .msg-img-container { margin-top: 5px; cursor: pointer; display: block; }
+        .msg-img { max-width: 100%; border-radius: 8px; border: 1px solid #3b4a54; transition: 0.2s; }
+        .msg-img:active { opacity: 0.7; }
+        .download-link { display: block; font-size: 11px; color: #00a884; margin-top: 3px; text-decoration: none; font-weight: bold; }
 
-        /* واجهة الاختيار */
-        #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
-        .custom-btn { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 25px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        .btn-green { background-color: #00a884; color: white; }
+        footer { background: #202c33; padding: 12px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; width: 100%; box-sizing: border-box; }
+        #msgInput { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #2a3942; color: white; outline: none; }
+        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; font-size: 20px; }
+        #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; }
         .hidden { display: none !important; }
-        .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; }
     </style>
 </head>
 <body>
 
 <div id="overlay">
     <div id="step-name" class="modal-card">
-        <h2>أهلاً بك</h2>
-        <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
-        <button class="custom-btn btn-green" onclick="saveUsername()">متابعة</button>
-    </div>
-    <div id="step-choice" class="modal-card hidden">
-        <h2>اختر نوع الدردشة</h2>
-        <button class="custom-btn btn-green" onclick="joinPublic()">الشات العام</button>
-        <button class="custom-btn" style="background:#202c33; color:#00a884; border:1px solid #00a884;" onclick="showPrivateForm()">غرفة خاصة</button>
-    </div>
-    <div id="step-private" class="modal-card hidden">
-        <h2>بيانات الغرفة</h2>
-        <input type="text" id="room-name-input" class="modern-input" placeholder="اسم الغرفة">
-        <input type="password" id="room-pass-input" class="modern-input" placeholder="كلمة السر">
-        <button class="custom-btn btn-green" onclick="joinPrivate()">دخول</button>
+        <h2>واتساب العرب</h2>
+        <input type="text" id="username-input" style="width:90%; padding:10px; margin:10px; border-radius:10px; background:#2a3942; color:white; border:none;" placeholder="اسمك المستعار">
+        <button onclick="saveUsername()" style="width:100%; padding:12px; background:#00a884; color:white; border:none; border-radius:20px;">دخول</button>
     </div>
 </div>
 
 <header>
-    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px; cursor:pointer;">خروج</button>
+    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px;">خروج</button>
     <div id="room-display">الرئيسية</div>
     <div style="width:40px"></div>
 </header>
@@ -65,7 +46,7 @@
 <div id="chat-box"></div>
 
 <footer>
-    <button class="icon-btn" onclick="sendImageUrl()">🖼️</button>
+    <button onclick="sendImageUrl()" style="background:none; border:none; font-size:22px; cursor:pointer;">🖼️</button>
     <input type="text" id="msgInput" placeholder="اكتب رسالة...">
     <button class="send-btn" onclick="sendMessage()">➤</button>
 </footer>
@@ -78,88 +59,51 @@
     firebase.initializeApp(firebaseConfig);
 
     let currentUsername = localStorage.getItem("chat_user");
-    let messagesRef = null;
+    let messagesRef = firebase.database().ref("messages/public_chat");
 
-    if(currentUsername) {
-        document.getElementById('step-name').classList.add('hidden');
-        document.getElementById('step-choice').classList.remove('hidden');
-    }
+    if(currentUsername) document.getElementById('overlay').classList.add('hidden');
 
     function saveUsername() {
         const val = document.getElementById('username-input').value.trim();
-        if(val) {
-            currentUsername = val;
-            localStorage.setItem("chat_user", val);
-            document.getElementById('step-name').classList.add('hidden');
-            document.getElementById('step-choice').classList.remove('hidden');
-        }
-    }
-
-    function showPrivateForm() {
-        document.getElementById('step-choice').classList.add('hidden');
-        document.getElementById('step-private').classList.remove('hidden');
-    }
-
-    function joinPublic() {
-        document.getElementById("overlay").classList.add("hidden");
-        setupChat("الشات العام", "public_chat");
-    }
-
-    function joinPrivate() {
-        let roomName = document.getElementById('room-name-input').value.trim() || "عام";
-        let roomPass = document.getElementById('room-pass-input').value.trim();
-        if(!roomPass) return;
-
-        const roomRef = firebase.database().ref("room_settings/" + roomName);
-        roomRef.once('value').then((snapshot) => {
-            const data = snapshot.val();
-            document.getElementById("overlay").classList.add("hidden");
-            if (!data) {
-                roomRef.set({ password: roomPass });
-                setupChat("غرفة: " + roomName, "private_" + roomName);
-            } else if (data.password === roomPass) {
-                setupChat("غرفة: " + roomName, "private_" + roomName);
-            } else {
-                setupChat("غرفة: " + roomName, "fake_" + roomName + "_" + roomPass);
-            }
-        });
-    }
-
-    function setupChat(displayName, dbPath) {
-        document.getElementById("room-display").innerText = displayName;
-        messagesRef = firebase.database().ref("messages/" + dbPath);
-
-        messagesRef.on("child_added", (snapshot) => {
-            const data = snapshot.val();
-            const chatBox = document.getElementById("chat-box");
-            const msgDiv = document.createElement("div");
-            const isMe = data.user === currentUsername;
-            msgDiv.className = `message ${isMe ? 'sent' : 'received'}`;
-            
-            let content = `<small style="color:${isMe ? '#8696a0' : '#ffd700'}">${data.user}</small><br>`;
-            if(data.type === 'image') content += `<img src="${data.url}" class="msg-img">`;
-            else content += data.text;
-
-            msgDiv.innerHTML = content;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
+        if(val) { currentUsername = val; localStorage.setItem("chat_user", val); document.getElementById('overlay').classList.add('hidden'); }
     }
 
     function sendMessage() {
         const input = document.getElementById("msgInput");
-        if (input.value.trim() !== "" && messagesRef) {
+        if (input.value.trim() !== "") {
             messagesRef.push({ user: currentUsername, text: input.value, type: 'text' });
             input.value = "";
         }
     }
 
     function sendImageUrl() {
-        const url = prompt("الصق رابط الصورة هنا:");
-        if(url && messagesRef) {
-            messagesRef.push({ user: currentUsername, url: url, type: 'image' });
-        }
+        const url = prompt("أدخل رابط الصورة (يجب أن ينتهي بـ .jpg أو .png):");
+        if(url) messagesRef.push({ user: currentUsername, url: url, type: 'image' });
     }
+
+    messagesRef.on("child_added", (snapshot) => {
+        const data = snapshot.val();
+        const chatBox = document.getElementById("chat-box");
+        const msgDiv = document.createElement("div");
+        const isMe = data.user === currentUsername;
+        msgDiv.className = `message ${isMe ? 'sent' : 'received'}`;
+        
+        let content = `<small style="color:${isMe ? '#8696a0' : '#ffd700'}">${data.user}</small><br>`;
+        if(data.type === 'image') {
+            // جعل الصورة رابطاً قابلاً للفتح والتحميل
+            content += `
+                <a href="${data.url}" target="_blank" class="msg-img-container">
+                    <img src="${data.url}" class="msg-img">
+                    <span class="download-link">تحميل / فتح الصورة 🔗</span>
+                </a>`;
+        } else {
+            content += data.text;
+        }
+
+        msgDiv.innerHTML = content;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
 
     document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
 </script>
