@@ -5,32 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>واتساب العرب - نسخة المتصفح</title>
     <style>
-        /* إصلاح الهيكل لضمان ظهور العناصر في المتصفح */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #0b141a; display: flex; flex-direction: column; color: white; }
-        
         header { background-color: #202c33; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; }
-        
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: rgba(11, 20, 26, 0.9); background-blend-mode: overlay; }
-        
         .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; word-wrap: break-word; }
         .sent { align-self: flex-end; background-color: #005c4b; }
         .received { align-self: flex-start; background-color: #202c33; }
         .msg-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
-
         footer { background: #202c33; padding: 12px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; position: relative; bottom: 0; width: 100%; box-sizing: border-box; }
-        
         #msgInput { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
-        .icon-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #8696a0; padding: 0 5px; }
-        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }
+        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-        /* واجهة الاختيار */
-        #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
+        /* واجهة الاختيار والألعاب */
+        #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; overflow-y: auto; }
+        .modal-card { background: #222e35; padding: 25px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
         .custom-btn { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 25px; font-size: 16px; cursor: pointer; font-weight: bold; }
         .btn-green { background-color: #00a884; color: white; }
         .hidden { display: none !important; }
         .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; }
+
+        /* قسم الألعاب */
+        .games-section { margin-top: 20px; padding-top: 15px; border-top: 1px dashed #3b4a54; }
+        .game-link { display: inline-block; width: 45%; margin: 5px; padding: 10px; background: #323739; border-radius: 10px; text-decoration: none; color: #00a884; font-size: 14px; border: 1px solid #00a884; }
     </style>
 </head>
 <body>
@@ -44,8 +41,15 @@
 
     <div id="step-choice" class="modal-card hidden">
         <h2>الدخول للدردشة</h2>
-        <p style="color: #8696a0; font-size: 14px;">يجب إنشاء أو دخول غرفة خاصة مشفرة</p>
+        <p style="color: #8696a0; font-size: 14px;">يجب دخول غرفة خاصة مشفرة</p>
         <button class="custom-btn btn-green" onclick="showPrivateForm()">دخول غرفة خاصة</button>
+        
+        <div class="games-section">
+            <h4 style="margin-bottom: 10px; color: #ffd700;">🎮 منطقة الألعاب (تسلية)</h4>
+            <a href="https://poki.com/ar/g/tic-tac-toe" target="_blank" class="game-link">لعبة X-O</a>
+            <a href="https://poki.com/ar/g/bubble-shooter" target="_blank" class="game-link">فقاعات</a>
+            <p style="font-size: 11px; color: #8696a0; margin-top: 10px;">سيتم فتح اللعبة في نافذة جديدة</p>
+        </div>
     </div>
 
     <div id="step-private" class="modal-card hidden">
@@ -53,6 +57,7 @@
         <input type="text" id="room-name-input" class="modern-input" placeholder="اسم الغرفة">
         <input type="password" id="room-pass-input" class="modern-input" placeholder="كلمة السر">
         <button class="custom-btn btn-green" onclick="joinPrivate()">دخول</button>
+        <button onclick="showStepChoice()" style="background:none; border:none; color:#8696a0; cursor:pointer; margin-top:10px;">← العودة</button>
     </div>
 </div>
 
@@ -65,7 +70,7 @@
 <div id="chat-box"></div>
 
 <footer>
-    <button class="icon-btn" onclick="sendImageUrl()">🖼️</button>
+    <button class="icon-btn" style="background:none; border:none; font-size:20px; color:#8696a0;" onclick="sendImageUrl()">🖼️</button>
     <input type="text" id="msgInput" placeholder="اكتب رسالة...">
     <button class="send-btn" onclick="sendMessage()">➤</button>
 </footer>
@@ -100,7 +105,10 @@
         document.getElementById('step-private').classList.remove('hidden');
     }
 
-    // تم حذف وظيفة joinPublic لتعطيل الشات العام
+    function showStepChoice() {
+        document.getElementById('step-private').classList.add('hidden');
+        document.getElementById('step-choice').classList.remove('hidden');
+    }
 
     function joinPrivate() {
         let roomName = document.getElementById('room-name-input').value.trim();
@@ -128,18 +136,15 @@
     function setupChat(displayName, dbPath) {
         document.getElementById("room-display").innerText = displayName;
         messagesRef = firebase.database().ref("messages/" + dbPath);
-
         messagesRef.on("child_added", (snapshot) => {
             const data = snapshot.val();
             const chatBox = document.getElementById("chat-box");
             const msgDiv = document.createElement("div");
             const isMe = data.user === currentUsername;
             msgDiv.className = `message ${isMe ? 'sent' : 'received'}`;
-            
             let content = `<small style="color:${isMe ? '#8696a0' : '#ffd700'}">${data.user}</small><br>`;
             if(data.type === 'image') content += `<img src="${data.url}" class="msg-img">`;
             else content += data.text;
-
             msgDiv.innerHTML = content;
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -163,6 +168,5 @@
 
     document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
 </script>
-
 </body>
 </html>
