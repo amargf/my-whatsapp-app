@@ -2,82 +2,103 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب العرب - نسخة المتصفح</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>واتساب العرب - النسخة المستقرة</title>
     <style>
-        /* أهم سطر لمنع متصفحات الجوال من عمل تحديث عند السحب لأسفل */
+        /* إعدادات المتصفح الأساسية */
         html, body { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
             background-color: #0b141a; color: white; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden; 
-            overscroll-behavior-y: none !important; /* مدعوم في كروم وسفاري الحديث */
+            font-family: sans-serif; 
+            overflow: hidden; /* لمنع اهتزاز الصفحة كاملة */
+            overscroll-behavior-y: none; /* منع الريفريش في المتصفحات الحديثة */
         }
 
-        #app-wrapper { display: flex; flex-direction: column; height: 100vh; position: relative; }
+        #app-wrapper { display: flex; flex-direction: column; height: 100vh; width: 100%; }
 
         header { 
             background-color: #202c33; padding: 12px 16px; 
             display: flex; justify-content: space-between; align-items: center; 
             border-bottom: 1px solid #3b4a54; flex-shrink: 0; 
         }
-        #room-display { font-size: 15px; color: #00a884; font-weight: bold; }
+        #room-display { font-size: 16px; color: #00a884; font-weight: bold; }
         .exit-btn { background: #ea0038; color: white; border: none; padding: 6px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; }
 
-        /* منطقة الدردشة - تمرير حر وسلس */
+        /* منطقة الدردشة - تمرير حر وسلس جداً */
         #chat-box { 
-            flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; 
-            padding: 15px; display: flex; flex-direction: column; gap: 8px;
+            flex: 1; 
+            overflow-y: scroll; /* تفعيل التمرير بشكل دائم */
+            -webkit-overflow-scrolling: touch; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px;
             background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-            background-color: rgba(11, 20, 26, 0.93); background-blend-mode: overlay;
+            background-color: rgba(11, 20, 26, 0.9); 
+            background-blend-mode: overlay;
         }
 
-        .message { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; }
+        .message { max-width: 85%; padding: 10px; border-radius: 10px; font-size: 15px; line-height: 1.4; word-wrap: break-word; }
         .sent { align-self: flex-end; background-color: #005c4b; border-bottom-right-radius: 2px; }
         .received { align-self: flex-start; background-color: #202c33; border-bottom-left-radius: 2px; }
-        .user-label { font-size: 11px; font-weight: bold; margin-bottom: 2px; display: block; }
+        .user-label { font-size: 11px; font-weight: bold; margin-bottom: 3px; display: block; color: #ffd700; }
 
-        footer { background: #202c33; padding: 10px; display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
-        #msgInput { flex: 1; padding: 12px 18px; border: none; border-radius: 25px; background: #2a3942; color: white; outline: none; font-size: 16px; }
-        .send-btn { background-color: #00a884; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; cursor: pointer; font-size: 20px; }
+        /* الفوتر وزر الإرسال */
+        footer { 
+            background: #202c33; padding: 10px 15px; 
+            display: flex; gap: 10px; align-items: center; 
+            flex-shrink: 0; border-top: 1px solid #3b4a54;
+        }
+        #msgInput { 
+            flex: 1; padding: 12px 15px; border: none; 
+            border-radius: 25px; background: #2a3942; 
+            color: white; outline: none; font-size: 16px; 
+        }
+        .send-btn { 
+            background-color: #00a884; color: white; 
+            border: none; border-radius: 50%; 
+            width: 50px; height: 50px; 
+            cursor: pointer; font-size: 24px; 
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
 
-        /* الواجهات العائمة */
+        /* الواجهات */
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
+        .modal-card { background: #222e35; padding: 25px; border-radius: 20px; width: 100%; max-width: 340px; text-align: center; border: 1px solid #3b4a54; }
         .hidden { display: none !important; }
-        .modern-input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; outline: none; }
-        .main-btn { width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .btn-green { background: #00a884; color: white; }
+        .modern-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; outline: none; font-size: 16px; }
+        .main-btn { width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; background: #00a884; color: white; }
     </style>
 </head>
 <body>
 
 <div id="overlay">
     <div id="step-name" class="modal-card">
-        <h2>واتساب العرب</h2>
+        <h2>أهلاً بك</h2>
         <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
-        <button class="main-btn btn-green" onclick="saveUsername()">دخول</button>
+        <button class="main-btn" onclick="saveUsername()">دخول</button>
     </div>
 
     <div id="step-choice" class="modal-card hidden">
         <h2>اختر الغرفة</h2>
-        <button class="main-btn btn-green" onclick="joinPublic()">الشات العام</button>
-        <button class="main-btn btn-green" style="background:#2a3942; margin-top:15px;" onclick="showPrivateForm()">غرفة خاصة</button>
+        <button class="main-btn" onclick="joinPublic()">الشات العام</button>
+        <button class="main-btn" style="background:#2a3942; margin-top:15px; border:1px solid #00a884;" onclick="showPrivateForm()">غرفة خاصة</button>
     </div>
 
     <div id="step-private" class="modal-card hidden">
         <h2>دخول غرفة خاصة</h2>
         <input type="text" id="room-name-input" class="modern-input" placeholder="اسم الغرفة">
         <input type="password" id="room-pass-input" class="modern-input" placeholder="كلمة السر">
-        <button class="main-btn btn-green" onclick="joinPrivate()">دخول</button>
-        <button style="background:none; border:none; color:#8696a0; margin-top:15px;" onclick="backToChoice()">رجوع</button>
+        <button class="main-btn" onclick="joinPrivate()">دخول</button>
+        <button style="background:none; border:none; color:#8696a0; margin-top:15px; cursor:pointer;" onclick="backToChoice()">رجوع</button>
     </div>
 </div>
 
 <div id="app-wrapper">
     <header>
         <button class="exit-btn" onclick="logout()">خروج</button>
-        <div id="room-display">الرئيسية</div>
+        <div id="room-display">جاري التحميل...</div>
         <div style="width:40px"></div> 
     </header>
     <div id="chat-box"></div>
@@ -93,14 +114,18 @@
 <script>
     const firebaseConfig = { databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
+    
     let currentUsername = localStorage.getItem("chat_user");
     let messagesRef = null;
     const chatBox = document.getElementById('chat-box');
 
-    // كود إضافي للمتصفحات لضمان عدم حدوث تحديث (Refresh) عند السحب لأسفل
-    document.addEventListener('touchmove', function(e) {
-        if (chatBox.scrollTop <= 0 && e.touches[0].pageY > 0) {
-            // منع السحب فقط إذا كنا في القمة
+    // كود لمنع سحب المتصفح "للأسفل فقط" لعدم عمل ريفريش، مع ترك الصعود والنزول يعمل
+    let lastY = 0;
+    chatBox.addEventListener('touchstart', (e) => { lastY = e.touches[0].pageY; }, { passive: true });
+    chatBox.addEventListener('touchmove', (e) => {
+        let currentY = e.touches[0].pageY;
+        // إذا كان المستخدم في أعلى الشات ويحاول السحب لأسفل (منع الريفريش)
+        if (chatBox.scrollTop === 0 && currentY > lastY) {
             if (e.cancelable) e.preventDefault();
         }
     }, { passive: false });
@@ -143,7 +168,7 @@
             const msgDiv = document.createElement("div");
             const isMe = data.user === currentUsername;
             msgDiv.className = `message ${isMe ? 'sent' : 'received'}`;
-            msgDiv.innerHTML = `<span class="user-label" style="color:${isMe ? '#8696a0' : '#ffd700'}">${data.user}</span>${data.text}`;
+            msgDiv.innerHTML = `<span class="user-label">${data.user}</span>${data.text}`;
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
