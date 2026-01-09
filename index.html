@@ -2,241 +2,47 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat without restrictions</title>
-    <meta property="og:title" content="Chat without restrictions">
-
     <style>
-        :root {
-            --bg-main: #0b141a;
-            --bg-header: #202c33;
-            --sent-msg: #005c4b;
-            --received-msg: #202c33;
-            --accent: #00a884;
-            --text-gray: #8696a0;
-        }
-
-        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-main); display: flex; flex-direction: column; color: white; }
-        
-        /* شاشة الترحيب */
-        #splash-screen {
-            position: fixed;
-            inset: 0;
-            background: #0b141a;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            z-index: 2000;
-        }
-
-        .logo-icon {
-            font-size: 90px;
-            color: var(--accent);
-            margin-bottom: 10px;
-            display: block;
-            animation: pulse 2s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
-
-        .splash-title {
-            font-size: 20px;
-            color: #ffffff;
-            margin: 0;
-            opacity: 0.8;
-            font-weight: normal;
-        }
-
-        .splash-subtitle {
-            font-size: 28px;
-            color: #ffffff;
-            margin: 10px 0 40px 0;
-            font-weight: bold;
-        }
-
-        .start-button {
-            background-color: var(--accent);
-            color: #0b141a;
-            padding: 15px 60px;
-            border-radius: 40px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 168, 132, 0.3);
-        }
-
-        /* الشات */
-        header { background-color: var(--bg-header); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; }
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 8px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: rgba(11, 20, 26, 0.95); }
-        .message { max-width: 80%; padding: 8px 12px; border-radius: 8px; font-size: 15px; position: relative; word-wrap: break-word; }
-        .sent { align-self: flex-end; background-color: var(--sent-msg); }
-        .received { align-self: flex-start; background-color: var(--received-msg); }
-        .msg-user { font-weight: bold; font-size: 12px; display: block; margin-bottom: 2px; }
-        .msg-time { font-size: 10px; color: var(--text-gray); float: left; margin-top: 5px; }
-
-        footer { background: var(--bg-header); padding: 10px; display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
-        #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
-        .send-btn { background: var(--accent); border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-
-        #overlay { position: fixed; inset: 0; background: var(--bg-main); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal-card { background: #222e35; padding: 30px; border-radius: 15px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
-        .modern-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; box-sizing: border-box; }
-        .hidden { display: none !important; }
-        .custom-btn { width: 100%; padding: 12px; margin-top: 15px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        /* تصميم بسيط وسريع للدردشة الخاصة */
+        body { font-family: Arial, sans-serif; background-color: #e5ddd5; margin: 0; }
+        .chat-container { display: flex; flex-direction: column; height: 100vh; }
+        .header { background-color: #075e54; color: white; padding: 15px; text-align: center; font-weight: bold; }
+        .messages { flex: 1; overflow-y: auto; padding: 20px; }
+        .message { background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px; max-width: 70%; }
+        .input-area { display: flex; padding: 10px; background: #f0f0f0; }
+        input { flex: 1; padding: 10px; border: none; border-radius: 20px; outline: none; }
+        button { background: #075e54; color: white; border: none; padding: 10px 20px; border-radius: 20px; margin-right: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
-
-<div id="splash-screen">
-    <div class="logo-icon">💬</div>
-    <h1 class="splash-title">مرحباً بك في</h1>
-    <p class="splash-subtitle">Chat without restrictions</p>
-    <button class="start-button" onclick="startChat()">بدء الدردشة</button>
-</div>
-
-<div id="overlay" class="hidden">
-    <div id="step-name" class="modal-card">
-        <h2 style="color:var(--accent)">Chat without restrictions</h2>
-        <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
-        <button class="custom-btn" style="background:var(--accent)" onclick="saveUsername()">متابعة</button>
-    </div>
-    
-    <div id="step-choice" class="modal-card hidden">
-        <h2>نوع الدردشة</h2>
-        <button class="custom-btn" style="background:var(--accent)" onclick="joinPublic()">الشات العام</button>
-        <button class="custom-btn" style="background:#2a3942; color:white; border:1px solid var(--accent);" onclick="showPrivateForm()">غرفة خاصة</button>
+    <div class="chat-container">
+        <div class="header">Chat without restrictions - محادثة مشفرة</div>
+        <div class="messages" id="chatBox">
+            <div class="message">مرحباً! أرسل الرابط لصديقك لبدء المحادثة الخاصة.</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="اكتب رسالتك هنا...">
+            <button onclick="sendMessage()">إرسال</button>
+        </div>
     </div>
 
-    <div id="step-private" class="modal-card hidden">
-        <h2>بيانات الغرفة</h2>
-        <input type="text" id="room-name-input" class="modern-input" placeholder="اسم الغرفة">
-        <input type="password" id="room-pass-input" class="modern-input" placeholder="كلمة السر">
-        <button class="custom-btn" style="background:var(--accent)" onclick="joinPrivate()">دخول / إنشاء</button>
-        <button class="custom-btn" style="background:transparent; color:var(--text-gray)" onclick="location.reload()">رجوع</button>
-    </div>
-</div>
-
-<header class="hidden">
-    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:8px; padding:6px 12px; cursor:pointer;">خروج</button>
-    <div id="room-display" style="font-weight:bold">الرئيسية</div>
-    <div id="user-display" style="font-size:11px; color:var(--accent)"></div>
-</header>
-
-<div id="chat-box" class="hidden"></div>
-
-<footer class="hidden">
-    <button class="send-btn" style="background:none; color:var(--text-gray)" onclick="sendImageUrl()">🖼️</button>
-    <input type="text" id="msgInput" placeholder="اكتب رسالة..." autocomplete="off">
-    <button class="send-btn" onclick="sendMessage()">➤</button>
-</footer>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-<script>
-    const firebaseConfig = { databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
-
-    let currentUsername = localStorage.getItem("chat_user");
-    let messagesRef = null;
-
-    function startChat() {
-        document.getElementById('splash-screen').classList.add('hidden');
-        document.getElementById('overlay').classList.remove('hidden');
-        if(currentUsername) {
-            document.getElementById('step-name').classList.add('hidden');
-            document.getElementById('step-choice').classList.remove('hidden');
-            document.getElementById('user-display').innerText = currentUsername;
-        }
-    }
-
-    function saveUsername() {
-        const val = document.getElementById('username-input').value.trim();
-        if(!val) return;
-        currentUsername = val;
-        localStorage.setItem("chat_user", val);
-        document.getElementById('user-display').innerText = val;
-        document.getElementById('step-name').classList.add('hidden');
-        document.getElementById('step-choice').classList.remove('hidden');
-    }
-
-    function showPrivateForm() {
-        document.getElementById('step-choice').classList.add('hidden');
-        document.getElementById('step-private').classList.remove('hidden');
-    }
-
-    function joinPublic() {
-        document.getElementById("overlay").classList.add("hidden");
-        showMainChat();
-        setupChat("العام", "public_chat");
-    }
-
-    function joinPrivate() {
-        let roomName = document.getElementById('room-name-input').value.trim() || "غرفة";
-        let roomPass = document.getElementById('room-pass-input').value.trim();
-        if(!roomPass) { alert("يجب وضع كلمة سر"); return; }
-
-        let uniqueID = roomName + "_" + roomPass;
-        document.getElementById("overlay").classList.add("hidden");
-        showMainChat();
-        setupChat("🔒 " + roomName, "private_" + uniqueID);
-    }
-
-    function showMainChat() {
-        document.querySelector('header').classList.remove('hidden');
-        document.getElementById('chat-box').classList.remove('hidden');
-        document.querySelector('footer').classList.remove('hidden');
-    }
-
-    function setupChat(displayName, dbPath) {
-        document.getElementById("room-display").innerText = displayName;
-        messagesRef = firebase.database().ref("messages/" + dbPath);
-        document.getElementById("chat-box").innerHTML = "";
-
-        messagesRef.limitToLast(50).on("child_added", (snapshot) => {
-            const data = snapshot.val();
-            const chatBox = document.getElementById("chat-box");
-            const isMe = data.user === currentUsername;
-            const msgDiv = document.createElement("div");
-            msgDiv.className = `message ${isMe ? 'sent' : 'received'}`;
-            
-            if(data.type === 'image') {
-                msgDiv.innerHTML = `<small class="msg-user" style="color:var(--accent)">${data.user}</small><img src="${data.url}" style="max-width:100%; border-radius:5px;"><br><small class="msg-time">${data.time || ''}</small>`;
-            } else {
-                msgDiv.innerHTML = `<small class="msg-user" style="color:var(--accent)">${data.user}</small>${data.text}<br><small class="msg-time">${data.time || ''}</small>`;
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const chatBox = document.getElementById('chatBox');
+            if (input.value.trim() !== "") {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message';
+                msgDiv.style.alignSelf = 'flex-start';
+                msgDiv.style.backgroundColor = '#dcf8c6';
+                msgDiv.textContent = input.value;
+                chatBox.appendChild(msgDiv);
+                input.value = "";
+                chatBox.scrollTop = chatBox.scrollHeight;
             }
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
-    }
-
-    function sendMessage() {
-        const input = document.getElementById("msgInput");
-        if (input.value.trim() !== "" && messagesRef) {
-            const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            messagesRef.push({ user: currentUsername, text: input.value, type: 'text', time: now });
-            input.value = "";
-            input.blur();
         }
-    }
-
-    function sendImageUrl() {
-        const url = prompt("الصق رابط الصورة:");
-        if(url && messagesRef) {
-            const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            messagesRef.push({ user: currentUsername, url: url, type: 'image', time: now });
-        }
-    }
-
-    document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
-</script>
+    </script>
 </body>
 </html>
