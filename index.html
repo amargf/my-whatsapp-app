@@ -14,25 +14,25 @@
             margin: 0; 
             padding: 0; 
             overflow: hidden; 
-            background-color: #121212; /* لون الخلفية المحيطة */
+            background-color: #121212; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
-            justify-content: center; /* توسيط التطبيق عرضياً */
-            align-items: center; /* توسيط التطبيق طولياً */
+            justify-content: center;
+            align-items: center;
         }
 
-        /* حاوية التطبيق الرئيسية لجعلها في المنتصف كالهاتف */
+        /* حاوية التطبيق المركزية */
         .app-container {
             width: 100%;
-            max-width: 450px; /* عرض محدد ليظهر في المنتصف */
+            max-width: 450px; 
             height: 100vh;
             background-color: #000;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
             position: relative;
             border-left: 1px solid #333;
             border-right: 1px solid #333;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
         header { 
@@ -57,16 +57,16 @@
             display: flex; 
             flex-direction: column; 
             background: #000;
-            gap: 10px;
-            padding-bottom: 20px;
+            gap: 12px;
         }
 
+        /* منطقة الكتابة - التأكد من ثباتها في الأسفل */
         footer { 
             background: #000; 
-            padding: 12px 15px; 
+            padding: 12px 10px; 
             display: flex; 
             align-items: center; 
-            gap: 12px;
+            gap: 8px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             flex-shrink: 0;
         }
@@ -77,7 +77,7 @@
             border-radius: 22px; 
             display: flex; 
             align-items: center; 
-            padding: 0 15px;
+            padding: 0 12px;
             border: 1px solid #333;
         }
         
@@ -98,7 +98,6 @@
             border-radius: 18px; 
             font-size: 14px; 
             word-wrap: break-word; 
-            line-height: 1.4;
             color: #fff;
             position: relative;
         }
@@ -112,23 +111,22 @@
             background-color: #262626; 
             border-bottom-left-radius: 4px;
         }
-        .user-tag { font-size: 10px; color: #888; margin-bottom: 2px; margin-right: 5px; }
-        .msg-time { font-size: 9px; opacity: 0.6; margin-top: 4px; display: block; text-align: left; }
+        .user-tag { font-size: 10px; color: #888; margin-bottom: 2px; }
+        .msg-time { font-size: 9px; opacity: 0.6; margin-top: 4px; display: block; }
 
-        .btn-icon { color: #0084ff; font-size: 20px; cursor: pointer; background: none; border: none; display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; border-radius: 50%; }
-        .btn-icon:hover { background: rgba(255,255,255,0.1); }
-        .send-btn { font-size: 22px; color: #0084ff; }
+        .btn-icon { color: #0084ff; font-size: 20px; cursor: pointer; background: none; border: none; display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; }
+        .send-btn { font-size: 22px; }
 
         #overlay { position: absolute; inset: 0; background: #000; z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .card { width: 85%; text-align: center; color: #fff; }
         .m-input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #333; background: #111; color: #fff; text-align: center; font-size: 16px; }
-        .m-btn { width: 100%; padding: 14px; background: #0084ff; color: #fff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        .m-btn { width: 100%; padding: 14px; background: #0084ff; color: #fff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
         .recording-active { color: #ff3b30 !important; animation: pulse 1s infinite; }
         @keyframes pulse { 50% { opacity: 0.5; } }
         .hidden { display: none !important; }
-        .msg-img { max-width: 100%; border-radius: 15px; margin-top: 5px; border: 1px solid #333; }
-        audio { height: 35px; width: 180px; filter: invert(1); margin-top: 5px; }
+        .msg-img { max-width: 100%; border-radius: 15px; margin-top: 5px; }
+        audio { height: 35px; width: 160px; filter: invert(1); margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -138,39 +136,37 @@
         <div id="step-name" class="card">
             <i class="fab fa-facebook-messenger" style="font-size: 60px; color: #0084ff; margin-bottom: 20px;"></i>
             <h2>مرحباً بك</h2>
-            <p style="color: #888; font-size: 14px;">أدخل اسمك المستعار للبدء</p>
-            <input type="text" id="username-input" class="m-input" placeholder="اسمك المستعار">
-            <button class="m-btn" onclick="saveUsername()">دخول <i class="fas fa-chevron-left"></i></button>
+            <input type="text" id="username-input" class="m-input" placeholder="اسم المستخدم">
+            <button class="m-btn" onclick="saveUsername()">دخول</button>
         </div>
         <div id="step-choice" class="card hidden">
-            <i class="fas fa-door-open" style="font-size: 50px; color: #0084ff; margin-bottom: 20px;"></i>
+            <i class="fas fa-comments" style="font-size: 50px; color: #0084ff; margin-bottom: 20px;"></i>
             <h2>الغرف</h2>
             <button class="m-btn" onclick="showPrivateForm()">دخول غرفة خاصة <i class="fas fa-lock"></i></button>
         </div>
         <div id="step-private" class="card hidden">
-            <i class="fas fa-shield-alt" style="font-size: 50px; color: #0084ff; margin-bottom: 20px;"></i>
             <input type="text" id="room-name-input" class="m-input" placeholder="اسم الغرفة">
             <input type="password" id="room-pass-input" class="m-input" placeholder="كلمة السر">
-            <button class="m-btn" onclick="joinPrivate()">تأكيد الدخول</button>
+            <button class="m-btn" onclick="joinPrivate()">تأكيد</button>
         </div>
     </div>
 
     <header>
-        <button class="btn-icon" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i></button>
+        <button class="btn-icon" onclick="location.reload()"><i class="fas fa-chevron-right"></i></button>
         <div class="header-info">
             <h1 id="room-display">Messenger</h1>
-            <div class="online-status"><i class="fas fa-circle" style="font-size: 8px;"></i> متصل الآن</div>
+            <div class="online-status">● متصل الآن</div>
         </div>
-        <button class="btn-icon"><i class="fas fa-video"></i></button>
+        <button class="btn-icon"><i class="fas fa-info-circle"></i></button>
     </header>
 
     <div id="chat-box"></div>
 
     <footer>
-        <button class="btn-icon" onclick="sendImageUrl()" title="إرسال صورة"><i class="fas fa-plus-circle"></i></button>
-        <button class="btn-icon" title="كاميرا"><i class="fas fa-camera"></i></button>
+        <button class="btn-icon" onclick="sendImageUrl()"><i class="fas fa-plus-circle"></i></button>
+        <button class="btn-icon"><i class="fas fa-camera"></i></button>
         <div class="input-wrapper">
-            <input type="text" id="msgInput" placeholder="Aa" autocomplete="off">
+            <input type="text" id="msgInput" placeholder="اكتب رسالة..." autocomplete="off">
             <button class="btn-icon" id="recordBtn" onclick="toggleRecording()"><i class="fas fa-microphone" id="micIcon"></i></button>
         </div>
         <button class="btn-icon send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
@@ -221,7 +217,7 @@
             document.getElementById("overlay").classList.add("hidden");
             if(!d) { rRef.set({password: rPass}); setupChat(rName, "private_"+rName); }
             else if(d.password === rPass) { setupChat(rName, "private_"+rName); }
-            else { alert("كلمة المرور خاطئة"); location.reload(); }
+            else { alert("كلمة السر خاطئة"); location.reload(); }
         });
     }
 
@@ -252,15 +248,23 @@
             else if(d.type === 'voice') mDiv.innerHTML = `<audio controls src="${d.audio}"></audio>`;
             else mDiv.innerText = d.text;
 
-            const timeSpan = document.createElement("span");
-            timeSpan.className = "msg-time";
-            timeSpan.innerText = time;
-            mDiv.appendChild(timeSpan);
+            const tSpan = document.createElement("span");
+            tSpan.className = "msg-time";
+            tSpan.innerText = time;
+            mDiv.appendChild(tSpan);
 
             msgRow.appendChild(mDiv);
             box.appendChild(msgRow);
             box.scrollTop = box.scrollHeight;
         });
+    }
+
+    function sendMessage() {
+        const i = document.getElementById("msgInput");
+        if(i.value.trim() && messagesRef) {
+            messagesRef.push({user: currentUsername, text: i.value, type: 'text', time: Date.now()});
+            i.value = "";
+        }
     }
 
     async function toggleRecording() {
@@ -289,16 +293,8 @@
         }
     }
 
-    function sendMessage() {
-        const i = document.getElementById("msgInput");
-        if(i.value.trim() && messagesRef) {
-            messagesRef.push({user: currentUsername, text: i.value, type: 'text', time: Date.now()});
-            i.value = "";
-        }
-    }
-
     function sendImageUrl() {
-        const u = prompt("رابط الصورة:");
+        const u = prompt("رابط الصورة المباشر:");
         if(u && messagesRef) messagesRef.push({user: currentUsername, url: u, type: 'image', time: Date.now()});
     }
 
