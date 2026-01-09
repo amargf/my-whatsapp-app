@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>واتساب العرب Pro - النسخة الكاملة</title>
+    
+    <title>amargf_chat</title>
+    <meta property="og:title" content="amargf_chat">
+    <meta name="description" content="منصة amargf للدردشة">
+
     <style>
         :root {
             --bg-main: #0b141a;
@@ -54,7 +58,6 @@
         .send-btn { background: var(--accent); border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 20px; }
         .send-btn:active { transform: scale(0.9); }
 
-        /* الواجهات المنبثقة */
         #overlay { position: fixed; inset: 0; background: var(--bg-main); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-card { background: #222e35; padding: 30px; border-radius: 15px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
         .custom-btn { width: 100%; padding: 12px; margin-top: 15px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.3s; }
@@ -67,14 +70,14 @@
 
 <div id="overlay">
     <div id="step-name" class="modal-card">
-        <h2 style="color:var(--accent)">مرحباً بك</h2>
-        <p>اختر اسماً مستعاراً للبدء</p>
-        <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
-        <button class="custom-btn btn-green" onclick="saveUsername()">متابعة</button>
+        <h2 style="color:var(--accent)">amargf_chat</h2>
+        <p>أدخل اسمك المستعار للدخول</p>
+        <input type="text" id="username-input" class="modern-input" placeholder="الاسم هنا...">
+        <button class="custom-btn btn-green" onclick="saveUsername()">دخول</button>
     </div>
     
     <div id="step-choice" class="modal-card hidden">
-        <h2>نوع الدردشة</h2>
+        <h2>اختر نوع الدردشة</h2>
         <button class="custom-btn btn-green" onclick="joinPublic()">الشات العام</button>
         <button class="custom-btn" style="background:#2a3942; color:white;" onclick="showPrivateForm()">غرفة خاصة</button>
     </div>
@@ -90,7 +93,7 @@
 
 <header>
     <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:8px; padding:6px 12px; cursor:pointer; font-weight:bold;">خروج</button>
-    <div id="room-display" style="font-weight:bold">الرئيسية</div>
+    <div id="room-display" style="font-weight:bold">amargf - الرئيسية</div>
     <div id="user-display" style="font-size:11px; color:var(--accent)"></div>
 </header>
 
@@ -106,14 +109,12 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-    // تكوين Firebase
     const firebaseConfig = { databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
 
     let currentUsername = localStorage.getItem("chat_user");
     let messagesRef = null;
 
-    // تلوين الأسماء تلقائياً
     function stringToColor(str) {
         let hash = 0;
         for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
@@ -143,11 +144,11 @@
 
     function joinPublic() {
         document.getElementById("overlay").classList.add("hidden");
-        setupChat("الشات العام", "public_chat");
+        setupChat("amargf العام", "public_chat");
     }
 
     function joinPrivate() {
-        let roomName = document.getElementById('room-name-input').value.trim() || "غرفة_خاصة";
+        let roomName = document.getElementById('room-name-input').value.trim() || "غرفة";
         let roomPass = document.getElementById('room-pass-input').value.trim();
         if(!roomPass) return alert("يرجى إدخال كلمة سر");
 
@@ -189,7 +190,7 @@
                 msgDiv.innerHTML = `${userSpan}<img src="${data.url}" class="msg-img">${timeSpan}`;
             } else {
                 const textContent = document.createElement('span');
-                textContent.textContent = data.text; // حماية من الأكواد الخبيثة
+                textContent.textContent = data.text;
                 msgDiv.innerHTML = userSpan;
                 msgDiv.appendChild(textContent);
                 msgDiv.innerHTML += timeSpan;
@@ -203,39 +204,27 @@
     function sendMessage() {
         const input = document.getElementById("msgInput");
         const text = input.value.trim();
-
         if (text !== "" && messagesRef) {
             const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            messagesRef.push({ 
-                user: currentUsername, 
-                text: text, 
-                type: 'text',
-                time: now
-            });
-
-            input.value = ""; // مسح الحقل
-
-            // --- التعديل المطلوب: إخفاء لوحة المفاتيح في أي غرفة ---
-            input.blur(); 
+            messagesRef.push({ user: currentUsername, text: text, type: 'text', time: now });
+            input.value = "";
+            input.blur(); // إخفاء لوحة المفاتيح في كل الغرف
         }
     }
 
-    // إخفاء لوحة المفاتيح عند لمس منطقة الشات (مثل التطبيقات الحقيقية)
     document.getElementById("chat-box").addEventListener("touchstart", function() {
         document.getElementById("msgInput").blur();
     });
 
     function sendImageUrl() {
-        const url = prompt("الصق رابط الصورة هنا:");
+        const url = prompt("الصق رابط الصورة:");
         if(url && messagesRef) {
             const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             messagesRef.push({ user: currentUsername, url: url, type: 'image', time: now });
-            document.getElementById("msgInput").blur(); // إغلاق اللوحة بعد الإرسال أيضاً
+            document.getElementById("msgInput").blur();
         }
     }
 
-    // الإرسال عند الضغط على Enter
     document.getElementById("msgInput").addEventListener("keypress", (e) => { 
         if (e.key === "Enter") sendMessage(); 
     });
