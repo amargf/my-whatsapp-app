@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>واتساب العرب - غرف محمية</title>
+    <title>واتساب العرب - التمويه الذكي</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #0b141a; margin: 0; display: flex; flex-direction: column; height: 100vh; color: white; }
         header { background-color: #202c33; padding: 15px; text-align: center; border-bottom: 1px solid #3b4a54; }
-        #room-status { font-size: 13px; color: #00a884; margin-top: 5px; }
+        #room-status { font-size: 14px; color: #00a884; margin-top: 5px; }
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); }
         .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; }
         .sent { align-self: flex-end; background-color: #005c4b; }
@@ -21,7 +21,7 @@
 
 <header>
     <div>واتساب العرب</div>
-    <div id="room-status">تأمين الغرفة...</div>
+    <div id="room-display">جاري الدخول...</div>
 </header>
 
 <div id="chat-box"></div>
@@ -44,30 +44,39 @@
     localStorage.setItem("chat_user", username);
 
     let roomName = prompt("أدخل اسم الغرفة:") || "عام";
-    let roomPass = prompt("أدخل كلمة سر الغرفة:");
+    let roomPass = prompt("أدخل كلمة السر:");
 
     const roomRef = firebase.database().ref("room_settings/" + roomName);
-    const messagesRef = firebase.database().ref("messages/" + roomName);
 
-    // التحقق من كلمة السر
     roomRef.once('value').then((snapshot) => {
         const data = snapshot.val();
+        
         if (!data) {
-            // إنشاء غرفة جديدة بكلمة سر
+            // إنشاء الغرفة الأصلية لأول مرة
             roomRef.set({ password: roomPass });
-            startChat();
+            setupChat(roomName, roomName); 
         } else if (data.password === roomPass) {
-            // كلمة السر صحيحة
-            startChat();
+            // دخول الغرفة الأصلية (كلمة سر صحيحة)
+            setupChat(roomName, roomName);
         } else {
-            // كلمة سر خاطئة
-            alert("كلمة السر خاطئة! سيتم إعادة تحميل التطبيق.");
-            location.reload();
+            // التمويه: يظهر له اسم الغرفة "تنس" لكنه في مسار "تنس_خفي_كلمةالسر"
+            // هكذا لن يرى الرسائل الحقيقية أبداً
+            setupChat(roomName, roomName + "_hidden_" + roomPass);
         }
     });
 
-    function startChat() {
-        document.getElementById("room-status").innerText = "غرفة: " + roomName + " (محمية)";
+    function setupChat(displayName, dbPath) {
+        document.getElementById("room-display").innerText = "غرفة: " + displayName;
+        const messagesRef = firebase.database().ref("messages/" + dbPath);
+
+        window.sendMessage = function() {
+            const input = document.getElementById("msgInput");
+            if (input.value.trim() !== "") {
+                messagesRef.push({ user: username, text: input.value });
+                input.value = "";
+            }
+        };
+
         messagesRef.on("child_added", (snapshot) => {
             const data = snapshot.val();
             const chatBox = document.getElementById("chat-box");
@@ -79,13 +88,7 @@
         });
     }
 
-    function sendMessage() {
-        const input = document.getElementById("msgInput");
-        if (input.value.trim() !== "") {
-            messagesRef.push({ user: username, text: input.value });
-            input.value = "";
-        }
-    }
+    document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
 </script>
 </body>
 </html>
