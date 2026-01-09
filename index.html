@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>amargf_chat</title>
+    
+    <title>Chat without restrictions</title>
+    <meta property="og:title" content="Chat without restrictions">
+
     <style>
         :root {
             --bg-main: #0b141a;
@@ -43,9 +46,32 @@
             50% { transform: scale(1.1); opacity: 0.8; }
         }
 
-        .splash-title { font-size: 24px; color: #ffffff; margin: 0; opacity: 0.9; }
-        .splash-subtitle { font-size: 32px; color: #ffffff; margin: 5px 0 40px 0; font-weight: bold; }
-        .start-button { background-color: var(--accent); color: #0b141a; padding: 15px 70px; border-radius: 40px; font-size: 18px; font-weight: bold; border: none; cursor: pointer; }
+        .splash-title {
+            font-size: 20px;
+            color: #ffffff;
+            margin: 0;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+
+        .splash-subtitle {
+            font-size: 28px;
+            color: #ffffff;
+            margin: 10px 0 40px 0;
+            font-weight: bold;
+        }
+
+        .start-button {
+            background-color: var(--accent);
+            color: #0b141a;
+            padding: 15px 60px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 168, 132, 0.3);
+        }
 
         /* الشات */
         header { background-color: var(--bg-header); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; }
@@ -57,7 +83,7 @@
         .msg-time { font-size: 10px; color: var(--text-gray); float: left; margin-top: 5px; }
 
         footer { background: var(--bg-header); padding: 10px; display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
-        #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; }
+        #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
         .send-btn { background: var(--accent); border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
         #overlay { position: fixed; inset: 0; background: var(--bg-main); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
@@ -72,13 +98,13 @@
 <div id="splash-screen">
     <div class="logo-icon">💬</div>
     <h1 class="splash-title">مرحباً بك في</h1>
-    <p class="splash-subtitle">amargf_chat</p>
+    <p class="splash-subtitle">Chat without restrictions</p>
     <button class="start-button" onclick="startChat()">بدء الدردشة</button>
 </div>
 
 <div id="overlay" class="hidden">
     <div id="step-name" class="modal-card">
-        <h2 style="color:var(--accent)">amargf_chat</h2>
+        <h2 style="color:var(--accent)">Chat without restrictions</h2>
         <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
         <button class="custom-btn" style="background:var(--accent)" onclick="saveUsername()">متابعة</button>
     </div>
@@ -94,6 +120,7 @@
         <input type="text" id="room-name-input" class="modern-input" placeholder="اسم الغرفة">
         <input type="password" id="room-pass-input" class="modern-input" placeholder="كلمة السر">
         <button class="custom-btn" style="background:var(--accent)" onclick="joinPrivate()">دخول / إنشاء</button>
+        <button class="custom-btn" style="background:transparent; color:var(--text-gray)" onclick="location.reload()">رجوع</button>
     </div>
 </div>
 
@@ -149,18 +176,15 @@
     function joinPublic() {
         document.getElementById("overlay").classList.add("hidden");
         showMainChat();
-        setupChat("amargf العام", "public_chat");
+        setupChat("العام", "public_chat");
     }
 
-    // التعديل الجوهري هنا لضمان إنشاء غرف مختلفة لنفس الاسم بكلمة سر مختلفة
     function joinPrivate() {
         let roomName = document.getElementById('room-name-input').value.trim() || "غرفة";
         let roomPass = document.getElementById('room-pass-input').value.trim();
         if(!roomPass) { alert("يجب وضع كلمة سر"); return; }
 
-        // ندمج اسم الغرفة مع كلمة السر لخلق مسار فريد في قاعدة البيانات
         let uniqueID = roomName + "_" + roomPass;
-        
         document.getElementById("overlay").classList.add("hidden");
         showMainChat();
         setupChat("🔒 " + roomName, "private_" + uniqueID);
@@ -175,8 +199,6 @@
     function setupChat(displayName, dbPath) {
         document.getElementById("room-display").innerText = displayName;
         messagesRef = firebase.database().ref("messages/" + dbPath);
-        
-        // تنظيف الشات عند الانتقال
         document.getElementById("chat-box").innerHTML = "";
 
         messagesRef.limitToLast(50).on("child_added", (snapshot) => {
@@ -191,7 +213,6 @@
             } else {
                 msgDiv.innerHTML = `<small class="msg-user" style="color:var(--accent)">${data.user}</small>${data.text}<br><small class="msg-time">${data.time || ''}</small>`;
             }
-            
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
