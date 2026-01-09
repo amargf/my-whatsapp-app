@@ -2,19 +2,40 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>واتساب العرب - النسخة الأصلية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>واتساب العرب - بدون ريفريش</title>
     <style>
         * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background-color: #0b141a; color: white; font-family: sans-serif; overflow: hidden; }
-        #app-wrapper { display: flex; flex-direction: column; height: 100vh; position: relative; }
-        header { background-color: #202c33; padding: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; }
         
+        /* التعديل الجوهري لمنع الريفريش */
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            width: 100%; 
+            background-color: #0b141a; 
+            color: white; 
+            font-family: sans-serif; 
+            overflow: hidden; 
+            overscroll-behavior-y: contain; /* هذا السطر يمنع سحب الصفحة للتحديث */
+        }
+
+        #app-wrapper { display: flex; flex-direction: column; height: 100vh; position: relative; }
+        
+        header { background-color: #202c33; padding: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; }
+        
+        /* تحسين منطقة الدردشة للصعود بسلاسة */
         #chat-box { 
-            flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; 
-            padding: 15px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-            background-color: rgba(11, 20, 26, 0.9); background-blend-mode: overlay;
-            display: flex; flex-direction: column;
+            flex: 1; 
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch; 
+            padding: 15px; 
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            background-color: rgba(11, 20, 26, 0.9); 
+            background-blend-mode: overlay;
+            display: flex; 
+            flex-direction: column;
+            overscroll-behavior-y: contain; /* منع الريفريش حتى داخل منطقة الشات */
         }
 
         .message { max-width: 80%; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 15px; line-height: 1.4; }
@@ -22,7 +43,7 @@
         .received { align-self: flex-start; background-color: #202c33; border-bottom-left-radius: 2px; }
         .user-label { color: #ffd700; font-weight: bold; font-size: 12px; margin-bottom: 4px; display: block; }
 
-        footer { background: #202c33; padding: 12px; display: flex; gap: 10px; align-items: center; }
+        footer { background: #202c33; padding: 12px; display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
         #msgInput { flex: 1; padding: 12px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
         .send-btn { background: #00a884; border: none; border-radius: 50%; width: 50px; height: 50px; color: white; font-size: 22px; cursor: pointer; }
 
@@ -138,5 +159,4 @@
     document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
 </script>
 </body>
-    </html>
-    
+</html>
