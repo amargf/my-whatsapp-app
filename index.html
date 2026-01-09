@@ -15,7 +15,6 @@
         .msg-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
         footer { background: #202c33; padding: 12px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; position: relative; bottom: 0; width: 100%; box-sizing: border-box; }
         #msgInput { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
-        .icon-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #8696a0; padding: 0 5px; }
         .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }
 
         /* واجهات الـ Overlay */
@@ -27,22 +26,9 @@
         .btn-gray { background-color: #3b4a54; color: white; }
         .hidden { display: none !important; }
         .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; }
-        
-        /* تصميم واجهة اللعبة داخل التطبيق */
-        #game-view { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; }
-        #game-frame { flex: 1; border: none; width: 100%; height: 100%; }
-        .game-header { background: #202c33; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
-
-<div id="game-view">
-    <div class="game-header">
-        <span style="color: #ffd700; font-weight: bold;">🎮 جاري اللعب الآن</span>
-        <button onclick="closeGame()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 15px; cursor:pointer;">إغلاق X</button>
-    </div>
-    <iframe id="game-frame" src=""></iframe>
-</div>
 
 <div id="overlay">
     <div id="step-name" class="modal-card">
@@ -67,8 +53,9 @@
 
     <div id="step-games" class="modal-card hidden">
         <h2 style="color: #ffd700;">🎮 قائمة الألعاب</h2>
+        <p style="color: #8696a0; font-size: 12px;">اضغط على الزر لتشغيل اللعبة فوراً</p>
         <div style="margin: 15px 0;">
-            <button class="custom-btn btn-green" onclick="openGame('http://www.appcreator24.com/intra/app_sec_game_preview.php?idioma=en&idsesion=pwy4fd5h2gat8c6ibqsmle097joknr3zu1xv&idg=1&ckp=8rwmciks4a617d2v9yxzeltfnpjb5h0oq3gu@1633713@0')">🕹️ ابدأ لعبتك المفضلة</button>
+            <button class="custom-btn btn-green" onclick="launchGame()">🕹️ ابدأ اللعبة الآن</button>
         </div>
         <button class="custom-btn btn-gray" onclick="showStepChoice()">عودة للقائمة</button>
     </div>
@@ -83,7 +70,7 @@
 <div id="chat-box"></div>
 
 <footer>
-    <button class="icon-btn" onclick="sendImageUrl()">🖼️</button>
+    <button class="icon-btn" style="background:none; border:none; font-size:22px; color:#8696a0;" onclick="sendImageUrl()">🖼️</button>
     <input type="text" id="msgInput" placeholder="اكتب رسالة...">
     <button class="send-btn" onclick="sendMessage()">➤</button>
 </footer>
@@ -129,15 +116,10 @@
         document.getElementById('step-games').classList.remove('hidden');
     }
 
-    // وظائف تشغيل وإغلاق اللعبة
-    function openGame(url) {
-        document.getElementById('game-frame').src = url;
-        document.getElementById('game-view').style.display = 'flex';
-    }
-
-    function closeGame() {
-        document.getElementById('game-view').style.display = 'none';
-        document.getElementById('game-frame').src = "";
+    // وظيفة فتح اللعبة في نافذة جديدة لحل مشكلة السواد والـ iframe
+    function launchGame() {
+        const gameUrl = "http://www.appcreator24.com/intra/app_sec_game_preview.php?idioma=en&idsesion=pwy4fd5h2gat8c6ibqsmle097joknr3zu1xv&idg=1&ckp=8rwmciks4a617d2v9yxzeltfnpjb5h0oq3gu@1633713@0";
+        window.open(gameUrl, 'GameWindow', 'width=500,height=700,scrollbars=yes');
     }
 
     function joinPrivate() {
