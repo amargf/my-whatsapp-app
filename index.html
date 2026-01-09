@@ -3,41 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>واتساب العرب - نسخة المتصفح</title>
+    <title>واتساب العرب - النسخة الاحترافية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b141a; display: flex; flex-direction: column; color: white; }
         
+        /* الهيدر */
         header { background-color: #202c33; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; }
         .header-info { display: flex; align-items: center; gap: 10px; }
-        .header-info i { color: #8696a0; font-size: 20px; }
 
+        /* منطقة الدردشة */
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: rgba(11, 20, 26, 0.9); background-blend-mode: overlay; }
         
-        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; word-wrap: break-word; position: relative; }
+        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; word-wrap: break-word; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
         .sent { align-self: flex-end; background-color: #005c4b; border-top-left-radius: 0; }
         .received { align-self: flex-start; background-color: #202c33; border-top-right-radius: 0; }
         .msg-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
 
-        footer { background: #202c33; padding: 10px 15px; display: flex; gap: 12px; align-items: center; flex-shrink: 0; width: 100%; box-sizing: border-box; }
-        
-        #msgInput { flex: 1; padding: 10px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
-        
-        .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #8696a0; transition: color 0.3s; }
+        /* تذييل الصفحة (منطقة الإدخال) */
+        footer { background: #202c33; padding: 10px; display: flex; gap: 10px; align-items: center; flex-shrink: 0; width: 100%; box-sizing: border-box; }
+        #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
+        .icon-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #8696a0; transition: 0.3s; padding: 5px; }
         .icon-btn:hover { color: #d1d7db; }
-        
-        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: transform 0.2s; }
-        .send-btn:active { transform: scale(0.9); }
+        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
-        /* واجهة الاختيار */
+        /* واجهات الدخول */
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
         .custom-btn { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 25px; font-size: 16px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-green { background-color: #00a884; color: white; }
         .hidden { display: none !important; }
         .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; }
+
+        /* تأثير النبض عند التسجيل */
+        @keyframes pulse { 0% { transform: scale(1); color: #8696a0; } 50% { transform: scale(1.3); color: #ea0038; } 100% { transform: scale(1); color: #8696a0; } }
+        .recording { animation: pulse 1s infinite; }
     </style>
 </head>
 <body>
@@ -47,37 +49,29 @@
         <i class="fas fa-user-circle fa-4x" style="color: #00a884; margin-bottom: 15px;"></i>
         <h2>مرحباً بك</h2>
         <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
-        <button class="custom-btn btn-green" onclick="saveUsername()">
-            متابعة <i class="fas fa-arrow-left"></i>
-        </button>
+        <button class="custom-btn btn-green" onclick="saveUsername()">متابعة <i class="fas fa-arrow-left"></i></button>
     </div>
 
     <div id="step-choice" class="modal-card hidden">
         <i class="fas fa-comments fa-4x" style="color: #00a884; margin-bottom: 15px;"></i>
         <h2>دخول الدردشة</h2>
-        <p style="color: #8696a0; font-size: 14px;">يجب إنشاء أو دخول غرفة خاصة مشفرة</p>
-        <button class="custom-btn btn-green" onclick="showPrivateForm()">
-            <i class="fas fa-lock"></i> دخول غرفة خاصة
-        </button>
+        <p style="color: #8696a0; font-size: 14px;">يرجى الانضمام لغرفة مشفرة</p>
+        <button class="custom-btn btn-green" onclick="showPrivateForm()"><i class="fas fa-lock"></i> دخول غرفة خاصة</button>
     </div>
 
     <div id="step-private" class="modal-card hidden">
         <h2>بيانات الغرفة</h2>
         <input type="text" id="room-name-input" class="modern-input" placeholder="اسم الغرفة">
         <input type="password" id="room-pass-input" class="modern-input" placeholder="كلمة السر">
-        <button class="custom-btn btn-green" onclick="joinPrivate()">
-            <i class="fas fa-door-open"></i> دخول
-        </button>
+        <button class="custom-btn btn-green" onclick="joinPrivate()"><i class="fas fa-door-open"></i> دخول</button>
     </div>
 </div>
 
 <header>
-    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px; cursor:pointer;">
-        <i class="fas fa-sign-out-alt"></i> خروج
-    </button>
+    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px; cursor:pointer;"><i class="fas fa-sign-out-alt"></i> خروج</button>
     <div class="header-info">
         <span id="room-display">الرئيسية</span>
-        <i class="fas fa-users"></i>
+        <i class="fas fa-shield-halved" style="color:#00a884"></i>
     </div>
     <div style="width:40px"></div>
 </header>
@@ -85,28 +79,24 @@
 <div id="chat-box"></div>
 
 <footer>
-    <button class="icon-btn" onclick="sendImageUrl()" title="إرسال صورة">
-        <i class="fas fa-paperclip"></i>
-    </button>
+    <button class="icon-btn" onclick="sendImageUrl()"><i class="fas fa-image"></i></button>
     <input type="text" id="msgInput" placeholder="اكتب رسالة...">
-    <button class="icon-btn" style="margin-left: 5px;">
-        <i class="fas fa-microphone"></i>
-    </button>
-    <button class="send-btn" onclick="sendMessage()">
-        <i class="fas fa-paper-plane"></i>
-    </button>
+    <button class="icon-btn" id="recordBtn" onclick="toggleRecording()"><i class="fas fa-microphone" id="micIcon"></i></button>
+    <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
 </footer>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-    // الإبقاء على نفس منطق JavaScript البرمجي الخاص بك
     const firebaseConfig = { databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
 
     let currentUsername = localStorage.getItem("chat_user");
     let messagesRef = null;
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
 
     if(currentUsername) {
         document.getElementById('step-name').classList.add('hidden');
@@ -131,10 +121,7 @@
     function joinPrivate() {
         let roomName = document.getElementById('room-name-input').value.trim();
         let roomPass = document.getElementById('room-pass-input').value.trim();
-        if(!roomName || !roomPass) {
-            alert("يرجى إدخال اسم الغرفة وكلمة السر");
-            return;
-        }
+        if(!roomName || !roomPass) return alert("أكمل البيانات");
 
         const roomRef = firebase.database().ref("room_settings/" + roomName);
         roomRef.once('value').then((snapshot) => {
@@ -146,7 +133,7 @@
             } else if (data.password === roomPass) {
                 setupChat("غرفة: " + roomName, "private_" + roomName);
             } else {
-                setupChat("غرفة: " + roomName, "fake_" + roomName + "_" + roomPass);
+                setupChat("غرفة وهمية", "fake_" + roomName);
             }
         });
     }
@@ -162,14 +149,43 @@
             const isMe = data.user === currentUsername;
             msgDiv.className = `message ${isMe ? 'sent' : 'received'}`;
             
-            let content = `<small style="font-weight:bold; color:${isMe ? '#8696a0' : '#ffd700'}">${data.user}</small><br>`;
+            let content = `<small style="font-weight:bold; color:${isMe ? '#aebac1' : '#ffd700'}">${data.user}</small><br>`;
+            
             if(data.type === 'image') content += `<img src="${data.url}" class="msg-img">`;
+            else if(data.type === 'voice') content += `<audio controls src="${data.audio}" style="width:200px; height:35px;"></audio>`;
             else content += data.text;
 
             msgDiv.innerHTML = content;
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
+    }
+
+    async function toggleRecording() {
+        const micIcon = document.getElementById('micIcon');
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {
+                        if (messagesRef) messagesRef.push({ user: currentUsername, audio: reader.result, type: 'voice' });
+                    };
+                };
+                mediaRecorder.start();
+                isRecording = true;
+                micIcon.classList.add('recording');
+            } catch (err) { alert("الميكروفون مطلوب!"); }
+        } else {
+            mediaRecorder.stop();
+            isRecording = false;
+            micIcon.classList.remove('recording');
+        }
     }
 
     function sendMessage() {
@@ -181,14 +197,11 @@
     }
 
     function sendImageUrl() {
-        const url = prompt("الصق رابط الصورة هنا:");
-        if(url && messagesRef) {
-            messagesRef.push({ user: currentUsername, url: url, type: 'image' });
-        }
+        const url = prompt("رابط الصورة:");
+        if(url && messagesRef) messagesRef.push({ user: currentUsername, url: url, type: 'image' });
     }
 
     document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
 </script>
-
 </body>
 </html>
