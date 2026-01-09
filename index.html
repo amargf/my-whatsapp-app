@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="main-html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ماسنجر برو - واجهة محسنة</title>
+    <title>ماسنجر برو - متعدد اللغات</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <style>
@@ -71,7 +71,10 @@
             color: var(--text-main); 
             border-bottom-left-radius: 4px;
         }
-        .user-label { font-size: 11px; color: #b0b3b8; margin-bottom: 2px; margin-right: 8px; }
+
+        /* لغات مختلفة: تعديل انحناء الزوايا حسب الاتجاه */
+        [dir="ltr"] .sent { border-bottom-right-radius: 18px; border-bottom-left-radius: 4px; }
+        [dir="ltr"] .received { border-bottom-left-radius: 18px; border-bottom-right-radius: 4px; }
 
         footer { 
             padding: 12px 15px; 
@@ -102,14 +105,14 @@
         }
 
         .btn-action { color: var(--accent); font-size: 20px; cursor: pointer; background: none; border: none; padding: 5px; }
-        .btn-send { font-size: 24px; }
+        .lang-btn { font-size: 14px; font-weight: bold; background: #3a3b3c; color: white; border: none; padding: 5px 10px; border-radius: 10px; cursor: pointer; }
 
-        /* واجهة الدخول مع الأيقونات الجديدة */
         #overlay { position: fixed; inset: 0; background: #18191a; z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .login-card { width: 85%; max-width: 350px; text-align: center; }
         .input-group { position: relative; width: 100%; }
         .input-group i { position: absolute; right: 15px; top: 25px; color: #888; }
-        .m-input { width: 100%; padding: 14px 40px 14px 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #3e4042; background: #242526; color: white; }
+        [dir="ltr"] .input-group i { left: 15px; right: auto; }
+        .m-input { width: 100%; padding: 14px 40px; margin: 10px 0; border-radius: 12px; border: 1px solid #3e4042; background: #242526; color: white; }
         .m-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         .hidden { display: none !important; }
@@ -124,23 +127,23 @@
 <div id="overlay">
     <div id="step-name" class="login-card">
         <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Facebook_Messenger_logo_2020.svg" width="80" style="margin-bottom: 20px;">
-        <h2 style="margin-bottom: 20px;">مرحباً بك</h2>
+        <h2 id="tr-welcome">مرحباً بك</h2>
         <div class="input-group">
             <i class="fas fa-user"></i>
             <input type="text" id="username-input" class="m-input" placeholder="اكتب اسمك للمتابعة">
         </div>
-        <button class="m-btn" onclick="saveUsername()">دخول <i class="fas fa-arrow-left"></i></button>
+        <button class="m-btn" onclick="saveUsername()"><span id="tr-login">دخول</span> <i class="fas fa-sign-in-alt"></i></button>
     </div>
 
     <div id="step-choice" class="login-card hidden">
         <i class="fas fa-shield-halved" style="font-size: 50px; color: var(--accent); margin-bottom: 20px;"></i>
-        <h2 style="margin-bottom: 20px;">تأمين الدردشة</h2>
-        <button class="m-btn" onclick="showPrivateForm()"><i class="fas fa-door-closed"></i> دخول الغرفة المشفرة</button>
+        <h2 id="tr-security">تأمين الدردشة</h2>
+        <button class="m-btn" onclick="showPrivateForm()"><i class="fas fa-door-closed"></i> <span id="tr-join-room">دخول الغرفة المشفرة</span></button>
     </div>
 
     <div id="step-private" class="login-card hidden">
         <i class="fas fa-lock" style="font-size: 40px; color: #f3425f; margin-bottom: 15px;"></i>
-        <h2 style="margin-bottom: 20px;">بيانات الغرفة</h2>
+        <h2 id="tr-room-info">بيانات الغرفة</h2>
         <div class="input-group">
             <i class="fas fa-hashtag"></i>
             <input type="text" id="room-name-input" class="m-input" placeholder="اسم الغرفة">
@@ -149,28 +152,28 @@
             <i class="fas fa-key"></i>
             <input type="password" id="room-pass-input" class="m-input" placeholder="كلمة السر">
         </div>
-        <button class="m-btn" onclick="joinPrivate()">تأكيد الدخول <i class="fas fa-check-circle"></i></button>
+        <button class="m-btn" onclick="joinPrivate()"><span id="tr-confirm">تأكيد الدخول</span> <i class="fas fa-check-circle"></i></button>
     </div>
 </div>
 
 <header>
-    <button class="btn-action" onclick="location.reload()" style="color: #b0b3b8;"><i class="fas fa-arrow-right"></i></button>
+    <button class="lang-btn" onclick="toggleLanguage()" id="lang-toggle">EN</button>
     <div class="header-info">
         <h1 id="room-display">الدردشة</h1>
-        <div class="status">● نشط الآن</div>
+        <div class="status" id="tr-online">● متصل الآن</div>
     </div>
-    <button class="btn-action"><i class="fas fa-video"></i></button>
+    <button class="btn-action" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i></button>
 </header>
 
 <div id="chat-box"></div>
 
 <footer>
-    <button class="btn-action" onclick="sendImageUrl()" title="إرسال صورة"><i class="fas fa-image"></i></button>
+    <button class="btn-action" onclick="sendImageUrl()"><i class="fas fa-image"></i></button>
     <div class="input-wrapper">
         <input type="text" id="msgInput" placeholder="Aa" autocomplete="off">
-        <button class="btn-action" id="recordBtn" onclick="toggleRecording()"><i class="fas fa-microphone" id="micIcon" style="font-size: 18px;"></i></button>
+        <button class="btn-action" id="recordBtn" onclick="toggleRecording()"><i class="fas fa-microphone" id="micIcon"></i></button>
     </div>
-    <button class="btn-action btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    <button class="btn-action" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
 </footer>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -182,9 +185,42 @@
 
     let currentUsername = localStorage.getItem("chat_user");
     let messagesRef = null;
-    let mediaRecorder;
-    let audioChunks = [];
-    let isRecording = false;
+    let currentLang = 'ar';
+
+    // القاموس للترجمة
+    const translations = {
+        ar: {
+            welcome: "مرحباً بك", login: "دخول", security: "تأمين الدردشة", joinRoom: "دخول الغرفة المشفرة",
+            roomInfo: "بيانات الغرفة", confirm: "تأكيد الدخول", online: "● متصل الآن",
+            userPlaceholder: "اكتب اسمك للمتابعة", roomPlaceholder: "اسم الغرفة", passPlaceholder: "كلمة السر"
+        },
+        en: {
+            welcome: "Welcome", login: "Login", security: "Chat Security", joinRoom: "Join Secure Room",
+            roomInfo: "Room Details", confirm: "Confirm Join", online: "● Online Now",
+            userPlaceholder: "Type your name...", roomPlaceholder: "Room Name", passPlaceholder: "Password"
+        }
+    };
+
+    function toggleLanguage() {
+        currentLang = (currentLang === 'ar') ? 'en' : 'ar';
+        const html = document.getElementById('main-html');
+        html.dir = (currentLang === 'ar') ? 'rtl' : 'ltr';
+        html.lang = currentLang;
+        document.getElementById('lang-toggle').innerText = (currentLang === 'ar') ? 'EN' : 'AR';
+        
+        // تطبيق الترجمة
+        document.getElementById('tr-welcome').innerText = translations[currentLang].welcome;
+        document.getElementById('tr-login').innerText = translations[currentLang].login;
+        document.getElementById('tr-security').innerText = translations[currentLang].security;
+        document.getElementById('tr-join-room').innerText = translations[currentLang].joinRoom;
+        document.getElementById('tr-room-info').innerText = translations[currentLang].roomInfo;
+        document.getElementById('tr-confirm').innerText = translations[currentLang].confirm;
+        document.getElementById('tr-online').innerText = translations[currentLang].online;
+        
+        document.getElementById('username-input').placeholder = translations[currentLang].userPlaceholder;
+        document.getElementById('room-name-input').placeholder = translations[currentLang].roomPlaceholder;
+        document.getElementById('room-pass-input').placeholder = translations[currentLang].passPlaceholder;
+    }
 
     if(currentUsername) {
         document.getElementById('step-name').classList.add('hidden');
@@ -210,14 +246,13 @@
         let rName = document.getElementById('room-name-input').value.trim();
         let rPass = document.getElementById('room-pass-input').value.trim();
         if(!rName || !rPass) return;
-        
         const rRef = firebase.database().ref("room_settings/" + rName);
         rRef.once('value').then(s => {
             const d = s.val();
             document.getElementById("overlay").classList.add("hidden");
             if(!d) { rRef.set({password: rPass}); setupChat(rName, "private_"+rName); }
             else if(d.password === rPass) { setupChat(rName, "private_"+rName); }
-            else { setupChat("غرفة خاطئة", "fake_"+rName); }
+            else { setupChat("Error", "fake_"+rName); }
         });
     }
 
@@ -228,50 +263,14 @@
             const d = s.val();
             const box = document.getElementById("chat-box");
             const isMe = d.user === currentUsername;
-            
-            if(!isMe) {
-                const label = document.createElement("div");
-                label.className = "user-label";
-                label.innerText = d.user;
-                box.appendChild(label);
-            }
-
             const mDiv = document.createElement("div");
             mDiv.className = `message ${isMe ? 'sent' : 'received'}`;
-            
             if(d.type === 'image') mDiv.innerHTML = `<img src="${d.url}" class="msg-img">`;
             else if(d.type === 'voice') mDiv.innerHTML = `<audio controls src="${d.audio}"></audio>`;
             else mDiv.innerText = d.text;
-
             box.appendChild(mDiv);
             box.scrollTop = box.scrollHeight;
         });
-    }
-
-    async function toggleRecording() {
-        const icon = document.getElementById('micIcon');
-        if (!isRecording) {
-            try {
-                const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(s);
-                audioChunks = [];
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const r = new FileReader();
-                    r.readAsDataURL(blob);
-                    r.onloadend = () => { if(messagesRef) messagesRef.push({user: currentUsername, audio: r.result, type: 'voice'}); };
-                    s.getTracks().forEach(t => t.stop());
-                };
-                mediaRecorder.start();
-                isRecording = true;
-                icon.classList.add('recording-active');
-            } catch(e) { alert("الميكروفون مطلوب"); }
-        } else {
-            mediaRecorder.stop();
-            isRecording = false;
-            icon.classList.remove('recording-active');
-        }
     }
 
     function sendMessage() {
@@ -283,7 +282,7 @@
     }
 
     function sendImageUrl() {
-        const u = prompt("رابط الصورة:");
+        const u = prompt(currentLang === 'ar' ? "رابط الصورة:" : "Image URL:");
         if(u && messagesRef) messagesRef.push({user: currentUsername, url: u, type: 'image'});
     }
 
