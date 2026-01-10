@@ -2,113 +2,72 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Messenger Pro</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دردشة</title>
     <style>
-        html, body { 
-            height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden;
-            background-color: #1a1a1a; display: flex; justify-content: center; align-items: center;
-        }
-
-        .app-container {
-            width: 100%; max-width: 450px; height: 100%;
-            background: #000; display: flex; flex-direction: column; position: relative;
-        }
-
-        header { 
-            height: 60px; background: #111; border-bottom: 1px solid #222;
-            display: flex; align-items: center; padding: 0 15px; flex-shrink: 0;
-            color: white;
-        }
-
-        #chat-box { 
-            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px;
-            background: #000;
-        }
-
-        /* تعديل المسافة لرفع شريط الكتابة عن أزرار الهاتف */
-        footer { 
-            min-height: 110px; /* زيادة الارتفاع الكلي للأسفل */
-            background: #000; 
-            border-top: 1px solid #222;
-            display: flex; 
-            align-items: flex-start; 
-            padding: 20px 10px 50px 10px; /* مسافة 50 بكسل من الأسفل لضمان الرفع عن الأزرار */
-            flex-shrink: 0;
-        }
-
-        .input-wrapper {
-            flex: 1; background: #262626; border-radius: 20px; 
-            display: flex; align-items: center; padding: 0 15px;
-            height: 45px; border: 1px solid #333;
-        }
+        body { margin: 0; font-family: sans-serif; background: #000; color: white; display: flex; flex-direction: column; height: 100vh; }
         
-        #msgInput { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; }
-
-        .btn-icon { color: #0084ff; font-size: 24px; cursor: pointer; background: none; border: none; }
+        /* الهيدر */
+        header { background: #111; padding: 15px; text-align: center; border-bottom: 1px solid #333; }
         
-        /* الرسائل */
-        .message-row { display: flex; flex-direction: column; width: 100%; }
-        .message { max-width: 80%; padding: 10px 14px; border-radius: 18px; color: #fff; font-size: 14px; position: relative; }
+        /* منطقة الرسائل */
+        #chat-box { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+        
+        /* مكان الكتابة - تم تبسيطه لضمان الظهور */
+        footer { background: #111; padding: 10px; border-top: 1px solid #333; display: flex; gap: 5px; align-items: center; }
+        
+        input[type="text"] { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #444; background: #222; color: white; outline: none; }
+        
+        button { background: #0084ff; color: white; border: none; padding: 10px 15px; border-radius: 20px; cursor: pointer; }
+
+        /* فقاعات الرسائل */
+        .msg { max-width: 80%; padding: 8px 12px; border-radius: 15px; margin-bottom: 5px; position: relative; }
         .sent { align-self: flex-end; background: #0084ff; }
         .received { align-self: flex-start; background: #333; }
-        .msg-time { font-size: 9px; opacity: 0.5; margin-top: 4px; display: block; }
+        .user-name { font-size: 10px; color: #aaa; margin-bottom: 2px; }
+        .time { font-size: 9px; opacity: 0.5; display: block; margin-top: 3px; }
 
-        #overlay { position: absolute; inset: 0; background: #000; z-index: 100; display: flex; align-items: center; justify-content: center; color: white; }
-        .card { width: 85%; text-align: center; }
-        .m-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; background: #111; color: #fff; border: 1px solid #333; text-align: center; }
-        .m-btn { width: 100%; padding: 12px; background: #0084ff; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        /* شاشات الدخول */
+        #overlay { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .hidden { display: none !important; }
+        input.login-input { padding: 10px; margin: 10px; border-radius: 5px; border: 1px solid #333; background: #111; color: white; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div id="overlay">
-        <div id="step-name" class="card">
-            <i class="fab fa-facebook-messenger" style="font-size: 60px; color: #0084ff;"></i>
-            <h2>مرحباً بك</h2>
-            <input type="text" id="username-input" class="m-input" placeholder="اسمك المستعار">
-            <button class="m-btn" onclick="saveUsername()">دخول</button>
-        </div>
-        <div id="step-choice" class="card hidden">
-            <button class="m-btn" onclick="showPrivateForm()">دخول غرفة خاصة</button>
-        </div>
-        <div id="step-private" class="card hidden">
-            <input type="text" id="room-name-input" class="m-input" placeholder="اسم الغرفة">
-            <input type="password" id="room-pass-input" class="m-input" placeholder="كلمة السر">
-            <button class="m-btn" onclick="joinPrivate()">تأكيد</button>
-        </div>
+<div id="overlay">
+    <div id="step-name">
+        <h2>اكتب اسمك</h2>
+        <input type="text" id="username-input" class="login-input">
+        <button onclick="saveUsername()">دخول</button>
     </div>
-
-    <header>
-        <button class="btn-icon" onclick="location.reload()"><i class="fas fa-arrow-right"></i></button>
-        <div style="flex:1; text-align:center;">
-            <h3 id="room-display" style="margin:0;">Messenger</h3>
-            <span style="font-size:10px; color:#31a24c;">● متصل الآن</span>
-        </div>
-        <i class="fas fa-info-circle" style="color:#0084ff;"></i>
-    </header>
-
-    <div id="chat-box"></div>
-
-    <footer>
-        <button class="btn-icon" onclick="sendImageUrl()"><i class="fas fa-plus-circle"></i></button>
-        <div class="input-wrapper">
-            <input type="text" id="msgInput" placeholder="Aa" autocomplete="off">
-            <button class="btn-icon" id="recordBtn" onclick="toggleRecording()"><i class="fas fa-microphone" id="micIcon"></i></button>
-        </div>
-        <button class="btn-icon" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-    </footer>
+    <div id="step-choice" class="hidden">
+        <button onclick="showPrivateForm()">دخول غرفة خاصة</button>
+    </div>
+    <div id="step-private" class="hidden">
+        <input type="text" id="room-name-input" class="login-input" placeholder="اسم الغرفة">
+        <input type="password" id="room-pass-input" class="login-input" placeholder="كلمة السر">
+        <button onclick="joinPrivate()">تأكيد</button>
+    </div>
 </div>
+
+<header>
+    <b id="room-display">Messenger</b>
+</header>
+
+<div id="chat-box"></div>
+
+<footer>
+    <button onclick="sendImageUrl()">+</button>
+    <input type="text" id="msgInput" placeholder="اكتب رسالة...">
+    <button id="recordBtn" onclick="toggleRecording()">🎤</button>
+    <button onclick="sendMessage()">إرسال</button>
+</footer>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-    // برمجة Firebase والوظائف (لم يتغير فيها شيء)
     const firebaseConfig = { databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
 
@@ -141,7 +100,6 @@
     function joinPrivate() {
         let rName = document.getElementById('room-name-input').value.trim();
         let rPass = document.getElementById('room-pass-input').value.trim();
-        if(!rName || !rPass) return;
         const rRef = firebase.database().ref("room_settings/" + rName);
         rRef.once('value').then(s => {
             const d = s.val();
@@ -159,26 +117,18 @@
             const d = s.val();
             const box = document.getElementById("chat-box");
             const isMe = d.user === currentUsername;
-            const msgRow = document.createElement("div");
-            msgRow.className = "message-row";
-            if(!isMe) {
-                const label = document.createElement("div");
-                label.style = "font-size:10px; color:#888; margin-bottom:2px;";
-                label.innerText = d.user;
-                msgRow.appendChild(label);
-            }
+            
             const mDiv = document.createElement("div");
-            mDiv.className = `message ${isMe ? 'sent' : 'received'}`;
-            let timeStr = d.time ? new Date(d.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
-            if(d.type === 'image') mDiv.innerHTML = `<img src="${d.url}" style="max-width:100%; border-radius:10px;">`;
-            else if(d.type === 'voice') mDiv.innerHTML = `<audio controls src="${d.audio}" style="width:150px;filter:invert(1);height:30px;"></audio>`;
-            else mDiv.innerText = d.text;
-            const tSpan = document.createElement("span");
-            tSpan.className = "msg-time";
-            tSpan.innerText = timeStr;
-            mDiv.appendChild(tSpan);
-            msgRow.appendChild(mDiv);
-            box.appendChild(msgRow);
+            mDiv.className = `msg ${isMe ? 'sent' : 'received'}`;
+            
+            let html = !isMe ? `<div class="user-name">${d.user}</div>` : "";
+            if(d.type === 'image') html += `<img src="${d.url}" style="max-width:100%; border-radius:10px;">`;
+            else if(d.type === 'voice') html += `<audio controls src="${d.audio}" style="width:150px;filter:invert(1);"></audio>`;
+            else html += d.text;
+            
+            html += `<span class="time">${new Date(d.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`;
+            mDiv.innerHTML = html;
+            box.appendChild(mDiv);
             box.scrollTop = box.scrollHeight;
         });
     }
@@ -192,7 +142,7 @@
     }
 
     async function toggleRecording() {
-        const icon = document.getElementById('micIcon');
+        const btn = document.getElementById('recordBtn');
         if (!isRecording) {
             try {
                 const s = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -208,12 +158,12 @@
                 };
                 mediaRecorder.start();
                 isRecording = true;
-                icon.style.color = "red";
+                btn.innerText = "🛑";
             } catch(e) { alert("الميكروفون مطلوب"); }
         } else {
             mediaRecorder.stop();
             isRecording = false;
-            icon.style.color = "#0084ff";
+            btn.innerText = "🎤";
         }
     }
 
@@ -221,8 +171,6 @@
         const u = prompt("رابط الصورة:");
         if(u && messagesRef) messagesRef.push({user: currentUsername, url: u, type: 'image', time: Date.now()});
     }
-
-    document.getElementById("msgInput").addEventListener("keypress", (e) => { if(e.key === "Enter") sendMessage(); });
 </script>
 </body>
 </html>
