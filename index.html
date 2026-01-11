@@ -23,7 +23,7 @@
         .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 85%; max-width: 400px; }
         .room-input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 10px; background: #2a3942; color: white; border: 1px solid #3b4a54; font-size: 16px; text-align: center; }
         .hidden { display: none !important; }
-        #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-bottom: 3px solid #00a884; }
         audio { height: 35px; width: 200px; filter: invert(100%); margin-top: 5px; }
     </style>
 </head>
@@ -83,6 +83,7 @@
     firebase.initializeApp(config);
 
     let myName = localStorage.getItem("chat_user");
+    let savedRoom = localStorage.getItem("chat_room"); // استرجاع الغرفة المحفوظة
     let msgRef, callRef, pc, localStream, mediaRec, chunks = [];
     let callTimer = null;
     let pendingOffer = null; 
@@ -93,6 +94,11 @@
             const s = document.getElementById('splash-screen');
             if(s) { s.style.opacity = '0'; setTimeout(() => s.remove(), 800); }
         }, 1500);
+
+        // وضع اسم الغرفة تلقائياً إذا كان موجوداً
+        if(savedRoom) {
+            document.getElementById('room-id-input').value = savedRoom;
+        }
     };
 
     if(myName) { 
@@ -102,14 +108,20 @@
 
     function login() {
         const v = document.getElementById('username-input').value.trim();
-        if(v) { myName = v; localStorage.setItem("chat_user", v); document.getElementById('login-card').classList.add('hidden'); document.getElementById('rooms-card').classList.remove('hidden'); }
+        if(v) { 
+            myName = v; 
+            localStorage.setItem("chat_user", v); 
+            document.getElementById('login-card').classList.add('hidden'); 
+            document.getElementById('rooms-card').classList.remove('hidden'); 
+            if(savedRoom) document.getElementById('room-id-input').value = savedRoom;
+        }
     }
 
     function handleJoin() {
         const r = document.getElementById('room-id-input').value.trim();
         const p = document.getElementById('room-pass-input').value.trim();
         if(r && p) {
-            // تطبيق اقتراحك يا سيد: دمج اسم الغرفة مع كلمة السر مباشرة
+            localStorage.setItem("chat_room", r); // حفظ اسم الغرفة في الذاكرة
             const finalPath = r + p; 
             document.getElementById('current-room-name').innerText = r;
             document.getElementById('overlay').classList.add('hidden');
