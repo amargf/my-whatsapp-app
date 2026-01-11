@@ -3,44 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب العرب - النسخة النهائية</title>
+    <title>واتساب العرب - النسخة المصححة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #0b141a; color: white; font-family: 'Segoe UI', sans-serif; }
-        body { display: flex; flex-direction: column; }
-        header { background-color: #202c33; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; }
+        /* نظام توزيع الشاشة لضمان عدم الاختفاء */
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #0b141a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; }
+        
+        header { background-color: #202c33; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; height: 60px; box-sizing: border-box; }
+        
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: rgba(11,20,26,0.9); }
-        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; }
+        
+        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; word-wrap: break-word; }
         .sent { align-self: flex-end; background-color: #005c4b; }
         .received { align-self: flex-start; background-color: #202c33; }
-        footer { background: #202c33; padding: 10px 10px 40px 10px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; border-top: 1px solid #3b4a54; }
-        #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; }
+
+        /* منطقة الكتابة - مرفوعة بوضوح عن أزرار الأندرويد */
+        footer { 
+            background: #202c33; 
+            padding: 10px 10px 40px 10px; /* مساحة أمان سفلية كبيرة */
+            display: flex; 
+            gap: 8px; 
+            align-items: center; 
+            flex-shrink: 0; 
+            border-top: 1px solid #3b4a54;
+        }
+        
+        #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
         .icon-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .record-active { background: #ea0038 !important; animation: blink 1s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .call-btn { color: #00a884; font-size: 22px; cursor: pointer; }
-        .end-call-btn { color: #ea0038; font-size: 22px; cursor: pointer; display: none; }
+        .rec-active { background: #ea0038 !important; }
+
+        .call-btn { color: #00a884; font-size: 22px; cursor: pointer; margin-right: 15px; }
+        .end-btn { color: #ea0038; font-size: 22px; cursor: pointer; display: none; margin-right: 15px; }
+
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; width: 300px; }
+        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 300px; }
         .hidden { display: none !important; }
+        audio { max-width: 100%; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div id="overlay">
     <div id="step-name" class="modal-card">
-        <h2>أهلاً بك يا سيد</h2>
-        <input type="text" id="username-input" style="width:90%; padding:10px; margin:10px; border-radius:10px;" placeholder="اسمك">
-        <button onclick="saveUsername()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%;">دخول</button>
+        <h2>اسمك المستعار</h2>
+        <input type="text" id="username-input" style="width:90%; padding:10px; margin:10px; border-radius:10px; background:#2a3942; color:white; border:1px solid #3b4a54;" placeholder="اكتب اسمك">
+        <button onclick="saveUser()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%;">دخول</button>
     </div>
 </div>
 
 <header>
     <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 12px;">خروج</button>
-    <div id="room-display">1111</div>
+    <div id="room-id">1111</div>
     <div>
-        <i id="endCallBtn" class="fas fa-phone-slash end-call-btn" onclick="endCall()" style="margin-right:15px;"></i>
-        <i id="startCallBtn" class="fas fa-phone-alt call-btn" onclick="startCall()" style="margin-right:15px;"></i>
+        <i id="btn-end" class="fas fa-phone-slash end-btn" onclick="endCall()"></i>
+        <i id="btn-start" class="fas fa-phone-alt call-btn" onclick="startCall()"></i>
     </div>
 </header>
 
@@ -48,105 +64,113 @@
 <audio id="remoteAudio" autoplay playsinline></audio>
 
 <footer>
-    <button id="recordBtn" class="icon-btn" onclick="handleRecord()"><i class="fas fa-microphone" id="micIcon"></i></button>
+    <button id="micBtn" class="icon-btn" onclick="toggleMic()"><i class="fas fa-microphone" id="micIcon"></i></button>
     <input type="text" id="msgInput" placeholder="اكتب رسالة...">
-    <button class="icon-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    <button class="icon-btn" onclick="sendText()"><i class="fas fa-paper-plane"></i></button>
 </footer>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-    const firebaseConfig = { databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
+    const config = { databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(config);
 
-    let currentUsername = localStorage.getItem("chat_user");
-    let messagesRef, callRef, pc, localStream, mediaRecorder, chunks = [];
-    const servers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+    let user = localStorage.getItem("chat_user");
+    let msgRef, callRef, pc, localStream, mediaRec, chunks = [];
+    const ice = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-    if(currentUsername) { 
-        document.getElementById('step-name').classList.add('hidden'); 
-        setupChat("1111", "private_1111"); 
-        setupCall("private_1111"); 
+    if(user) { 
+        document.getElementById('overlay').classList.add('hidden'); 
+        initAll(); 
     }
 
-    function saveUsername() {
-        const val = document.getElementById('username-input').value.trim();
-        if(val) { localStorage.setItem("chat_user", val); location.reload(); }
+    function saveUser() {
+        const n = document.getElementById('username-input').value.trim();
+        if(n) { localStorage.setItem("chat_user", n); location.reload(); }
     }
 
-    function setupChat(name, path) {
-        messagesRef = firebase.database().ref("messages/" + path);
-        messagesRef.on("child_added", s => {
+    function initAll() {
+        msgRef = firebase.database().ref("messages/private_1111");
+        callRef = firebase.database().ref("calls/private_1111");
+
+        msgRef.on("child_added", s => {
             const d = s.val();
-            let content = d.type === 'audio' ? `<audio controls src="${d.audio}"></audio>` : d.text;
-            document.getElementById("chat-box").innerHTML += `<div class="message ${d.user===currentUsername?'sent':'received'}"><small>${d.user}</small><br>${content}</div>`;
+            let c = d.type === 'audio' ? `<audio controls src="${d.data}"></audio>` : d.text;
+            document.getElementById("chat-box").innerHTML += `<div class="message ${d.user===user?'sent':'received'}"><small>${d.user}</small><br>${c}</div>`;
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
+
+        callRef.on("child_added", async s => {
+            const d = s.val();
+            if(d.type === "offer" && d.from !== user) { if(confirm("مكالمة من " + d.from)) acceptCall(d); }
+            if(d.type === "answer" && d.to === user && pc) { await pc.setRemoteDescription(new RTCSessionDescription(d.sdp)); }
+            if(d.type === "candidate" && d.from !== user && pc) { pc.addIceCandidate(new RTCIceCandidate(d.cand)).catch(e=>{}); }
+        });
+        callRef.on("child_removed", () => stopAllMedia());
     }
 
-    async function handleRecord() {
-        const btn = document.getElementById("recordBtn");
+    async function toggleMic() {
+        const btn = document.getElementById("micBtn");
         const icon = document.getElementById("micIcon");
-        if (!mediaRecorder || mediaRecorder.state === "inactive") {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
+        if (!mediaRec || mediaRec.state === "inactive") {
+            const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRec = new MediaRecorder(s);
             chunks = [];
-            mediaRecorder.ondataavailable = e => chunks.push(e.data);
-            mediaRecorder.onstop = () => {
+            mediaRec.ondataavailable = e => chunks.push(e.data);
+            mediaRec.onstop = () => {
                 const blob = new Blob(chunks, { type: 'audio/webm' });
                 const reader = new FileReader();
                 reader.readAsDataURL(blob);
-                reader.onloadend = () => { messagesRef.push({ user: currentUsername, type: 'audio', audio: reader.result }); };
+                reader.onloadend = () => msgRef.push({ user: user, type: 'audio', data: reader.result });
             };
-            mediaRecorder.start();
-            btn.classList.add("record-active"); icon.className = "fas fa-stop";
+            mediaRec.start();
+            btn.classList.add("rec-active"); icon.className = "fas fa-stop";
         } else {
-            mediaRecorder.stop();
-            btn.classList.remove("record-active"); icon.className = "fas fa-microphone";
+            mediaRec.stop();
+            btn.classList.remove("rec-active"); icon.className = "fas fa-microphone";
         }
     }
 
-    function setupCall(path) {
-        callRef = firebase.database().ref("calls/" + path);
-        callRef.on("child_added", async s => {
-            const d = s.val();
-            if(d.type === "offer" && d.from !== currentUsername) { if(confirm("مكالمة من " + d.from)) answerCall(d); }
-            if(d.type === "answer" && d.to === currentUsername && pc) { await pc.setRemoteDescription(new RTCSessionDescription(d.sdp)); }
-            if(d.type === "candidate" && d.from !== currentUsername && pc) { pc.addIceCandidate(new RTCIceCandidate(d.candidate)).catch(e=>{}); }
-        });
-        callRef.on("child_removed", () => stopMedia());
-    }
-
     async function startCall() {
-        pc = new RTCPeerConnection(servers);
+        pc = new RTCPeerConnection(ice);
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
         pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
-        pc.onicecandidate = e => { if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()}); };
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        callRef.push({type: "offer", from: currentUsername, sdp: offer});
-        toggleUI(true);
+        pc.onicecandidate = e => { if(e.candidate) callRef.push({type:"candidate", from:user, cand:e.candidate.toJSON()}); };
+        const o = await pc.createOffer();
+        await pc.setLocalDescription(o);
+        callRef.push({type:"offer", from:user, sdp:o});
+        updateCallUI(true);
     }
 
-    async function answerCall(offer) {
-        pc = new RTCPeerConnection(servers);
+    async function acceptCall(o) {
+        pc = new RTCPeerConnection(ice);
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
         pc.ontrack = e => { const a = document.getElementById("remoteAudio"); a.srcObject = e.streams[0]; a.play(); };
-        pc.onicecandidate = e => { if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()}); };
-        await pc.setRemoteDescription(new RTCSessionDescription(offer.sdp));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        callRef.push({type: "answer", from: currentUsername, to: offer.from, sdp: answer});
-        toggleUI(true);
+        pc.onicecandidate = e => { if(e.candidate) callRef.push({type:"candidate", from:user, cand:e.candidate.toJSON()}); };
+        await pc.setRemoteDescription(new RTCSessionDescription(o.sdp));
+        const a = await pc.createAnswer();
+        await pc.setLocalDescription(a);
+        callRef.push({type:"answer", from:user, to:o.from, sdp:a});
+        updateCallUI(true);
     }
 
-    function endCall() { if(callRef) callRef.remove(); stopMedia(); }
-    function stopMedia() { if(pc) { pc.close(); pc = null; } if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; } toggleUI(false); }
-    function toggleUI(calling) { document.getElementById("startCallBtn").style.display = calling ? "none" : "inline-block"; document.getElementById("endCallBtn").style.display = calling ? "inline-block" : "none"; }
-    function sendMessage() { const i = document.getElementById("msgInput"); if(i.value) { messagesRef.push({user: currentUsername, text: i.value, type: 'text'}); i.value = ""; } }
+    function endCall() { if(callRef) callRef.remove(); stopAllMedia(); }
+    function stopAllMedia() { 
+        if(pc) { pc.close(); pc = null; } 
+        if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; } 
+        updateCallUI(false); 
+    }
+    function updateCallUI(c) {
+        document.getElementById("btn-start").style.display = c ? "none" : "inline-block";
+        document.getElementById("btn-end").style.display = c ? "inline-block" : "none";
+    }
+    function sendText() {
+        const i = document.getElementById("msgInput");
+        if(i.value) { msgRef.push({user: user, text: i.value, type: 'text'}); i.value = ""; }
+    }
 </script>
 </body>
 </html>
