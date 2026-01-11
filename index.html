@@ -25,7 +25,6 @@
         .room-input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 10px; background: #2a3942; color: white; border: 1px solid #3b4a54; font-size: 16px; text-align: center; }
         .hidden { display: none !important; }
         #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        audio { height: 35px; width: 200px; filter: invert(100%); margin-top: 5px; }
         .svg-icon { width: 24px; height: 24px; vertical-align: middle; fill: currentColor; }
     </style>
 </head>
@@ -105,13 +104,14 @@
             const s = document.getElementById('splash-screen');
             if(s) { s.style.opacity = '0'; setTimeout(() => s.remove(), 800); }
         }, 1500);
-        if(savedRoom) document.getElementById('room-id-input').value = savedRoom;
+        
+        // التحقق من وجود اسم مستخدم مسبقاً
+        if(myName) { 
+            document.getElementById('login-card').classList.add('hidden');
+            document.getElementById('rooms-card').classList.remove('hidden');
+            if(savedRoom) document.getElementById('room-id-input').value = savedRoom;
+        }
     };
-
-    if(myName) { 
-        document.getElementById('login-card').classList.add('hidden');
-        document.getElementById('rooms-card').classList.remove('hidden');
-    }
 
     function login() {
         const v = document.getElementById('username-input').value.trim();
@@ -134,6 +134,24 @@
             document.getElementById('overlay').classList.add('hidden');
             startApp(finalPath);
         }
+    }
+
+    function exitToRooms() {
+        // إيقاف الاتصالات الحالية
+        if(msgRef) msgRef.off(); 
+        if(callRef) callRef.off();
+        endCall();
+        
+        // مسح واجهة التشات
+        document.getElementById("chat-box").innerHTML = ""; 
+        
+        // العودة لواجهة الغرف مباشرة لأن الاسم محفوظ
+        document.getElementById('overlay').classList.remove('hidden');
+        document.getElementById('login-card').classList.add('hidden');
+        document.getElementById('rooms-card').classList.remove('hidden');
+        
+        // استعادة آخر غرفة استخدمها
+        if(savedRoom) document.getElementById('room-id-input').value = savedRoom;
     }
 
     function startApp(path) {
@@ -163,8 +181,6 @@
             stopAllMedia();
         });
     }
-
-    function exitToRooms() { location.reload(); }
 
     async function toggleRecord() {
         const btn = document.getElementById("recordBtn");
