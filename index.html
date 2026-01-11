@@ -145,32 +145,24 @@
         document.getElementById('login-card').classList.add('hidden');
         document.getElementById('rooms-card').classList.remove('hidden');
         
+        // الحل النهائي لكروم: تحديث الـ value والـ DOM معاً
         const rInput = document.getElementById('room-id-input');
         const latestRoom = localStorage.getItem("chat_room");
         if(latestRoom) {
             rInput.value = latestRoom;
-            rInput.setAttribute('value', latestRoom);
+            rInput.setAttribute('value', latestRoom); // إجبار المتصفح على رؤية التغيير
         }
     }
 
-    // تم تعديل هذه الدالة لجلب الرسائل القديمة تلقائياً
     function startApp(path) {
         msgRef = firebase.database().ref("messages/" + path);
         callRef = firebase.database().ref("calls/" + path);
         
-        // تفريغ الصندوق قبل البدء لضمان عدم التكرار
-        document.getElementById("chat-box").innerHTML = "";
-
-        // استخدام child_added سيقوم بجلب جميع الرسائل المخزنة سابقاً ثم يستمع للجديد
         msgRef.on("child_added", s => {
             const d = s.val();
             let html = d.type === 'audio' ? `<audio controls preload="auto"><source src="${d.data}" type="audio/webm"></audio>` : d.text;
-            
-            const chatBox = document.getElementById("chat-box");
-            chatBox.innerHTML += `<div class="message ${d.user===myName?'sent':'received'}"><small>${d.user}</small><br>${html}</div>`;
-            
-            // النزول لآخر رسالة
-            chatBox.scrollTop = chatBox.scrollHeight;
+            document.getElementById("chat-box").innerHTML += `<div class="message ${d.user===myName?'sent':'received'}"><small>${d.user}</small><br>${html}</div>`;
+            document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
 
         callRef.on("child_added", async s => {
