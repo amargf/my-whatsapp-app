@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب العرب - النسخة المحصنة</title>
+    <title>واتساب العرب</title>
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #0b141a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; }
         #splash-screen { position: fixed; inset: 0; background: #0b141a; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; transition: opacity 0.8s ease; }
@@ -36,7 +36,7 @@
         <svg viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-5.5-2.8-23.2-8.5-44.2-27.1-16.4-14.6-27.4-32.7-30.6-38.2-3.2-5.6-.3-8.6 2.5-11.3 2.5-2.5 5.6-6.5 8.3-9.7 2.8-3.3 3.7-5.6 5.6-9.3 1.9-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 13.2 5.8 23.5 9.2 31.5 11.8 13.3 4.2 25.4 3.6 35 2.2 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
     </div>
     <h2 style="color: #00a884;">واتساب العرب</h2>
-    <p>أهلاً بك يا سيد</p>
+    <p>بإدارة السيد Doffy</p>
 </div>
 
 <div id="call-ui" class="hidden">
@@ -49,7 +49,7 @@
 
 <div id="overlay">
     <div id="login-card" class="modal-card">
-        <h3>كلمة سر النسخة الملكية</h3>
+        <h3>رمز الدخول الملكي</h3>
         <input type="password" id="master-pass-input" class="room-input" placeholder="أدخل الرمز السري">
         <button onclick="checkMasterPass()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">دخول</button>
     </div>
@@ -89,23 +89,25 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-    const _a = "https://khadimalarab-";
-    const _b = "default-rtdb";
-    const _c = ".firebaseio.com/";
-    firebase.initializeApp({ databaseURL: _a + _b + _c });
+    // تمويه رابط قاعدة البيانات
+    const _p1 = "https://khadimalarab-";
+    const _p2 = "default-rtdb";
+    const _p3 = ".firebaseio.com/";
+    firebase.initializeApp({ databaseURL: _p1 + _p2 + _p3 });
 
     let myName = localStorage.getItem("chat_user");
     let msgRef, callRef, pc, localStream, mediaRec, chunks = [];
     let callTimer = null;
     let pendingOffer = null;
 
+    // التحقق من رمز الدخول الجديد
     function checkMasterPass() {
         const pass = document.getElementById('master-pass-input').value;
-        if(pass === "king2026") {
+        if(pass === "HalaMadrid1536") {
             document.getElementById('login-card').classList.add('hidden');
             if(!myName) document.getElementById('user-card').classList.remove('hidden');
             else document.getElementById('rooms-card').classList.remove('hidden');
-        } else { alert("الرمز السري خاطئ!"); }
+        } else { alert("الرمز السري الملكي خاطئ!"); }
     }
 
     function saveUser() {
@@ -130,6 +132,7 @@
         }
     }
 
+    // ميزة الخروج الذكي دون تصفير الجلسة
     function exitToRooms() {
         if(msgRef) msgRef.off();
         if(callRef) callRef.off();
@@ -168,15 +171,67 @@
 
     function escapeHTML(str) { const p = document.createElement('p'); p.textContent = str; return p.innerHTML; }
     document.getElementById('msgInput').addEventListener('input', function() { document.getElementById('char-count').innerText = this.value.length + "/200"; });
-    window.onload = () => { setTimeout(() => { document.getElementById('splash-screen').style.opacity = '0'; setTimeout(()=>document.getElementById('splash-screen').remove(), 800); }, 1500); };
+    
+    window.onload = () => { 
+        setTimeout(() => { 
+            document.getElementById('splash-screen').style.opacity = '0'; 
+            setTimeout(()=>document.getElementById('splash-screen').remove(), 800); 
+        }, 1500); 
+    };
 
-    async function startCall() { updateUI(true); pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }); localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); localStream.getTracks().forEach(t => pc.addTrack(t, localStream)); pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; }; pc.onicecandidate = e => { if(e.candidate && callTimer === "SENT") callRef.push({type:"candidate", from:myName, cand:e.candidate.toJSON()}); }; const o = await pc.createOffer(); await pc.setLocalDescription(o); callTimer = setTimeout(() => { callRef.push({type:"offer", from:myName, sdp:o}); callTimer = "SENT"; }, 1200); }
+    // نظام المكالمات (WebRTC)
+    async function startCall() { 
+        updateUI(true); 
+        pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }); 
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); 
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream)); 
+        pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; }; 
+        pc.onicecandidate = e => { if(e.candidate && callTimer === "SENT") callRef.push({type:"candidate", from:myName, cand:e.candidate.toJSON()}); }; 
+        const o = await pc.createOffer(); 
+        await pc.setLocalDescription(o); 
+        callTimer = setTimeout(() => { callRef.push({type:"offer", from:myName, sdp:o}); callTimer = "SENT"; }, 1200); 
+    }
+
     function answerIncomingCall() { if(pendingOffer) { acceptCall(pendingOffer); document.getElementById('call-ui').classList.add('hidden'); pendingOffer = null; } }
-    async function acceptCall(o) { pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }); localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); localStream.getTracks().forEach(t => pc.addTrack(t, localStream)); pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; }; pc.onicecandidate = e => { if(e.candidate) callRef.push({type:"candidate", from:myName, cand:e.candidate.toJSON()}); }; await pc.setRemoteDescription(new RTCSessionDescription(o.sdp)); const a = await pc.createAnswer(); await pc.setLocalDescription(a); callRef.push({type:"answer", from:myName, to:o.from, sdp:a}); updateUI(true); }
+    
+    async function acceptCall(o) { 
+        pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }); 
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); 
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream)); 
+        pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; }; 
+        pc.onicecandidate = e => { if(e.candidate) callRef.push({type:"candidate", from:myName, cand:e.candidate.toJSON()}); }; 
+        await pc.setRemoteDescription(new RTCSessionDescription(o.sdp)); 
+        const a = await pc.createAnswer(); 
+        await pc.setLocalDescription(a); 
+        callRef.push({type:"answer", from:myName, to:o.from, sdp:a}); 
+        updateUI(true); 
+    }
+
     function endCall() { if (callRef) callRef.remove(); stopAllMedia(); }
     function stopAllMedia() { if(pc) pc.close(); if(localStream) localStream.getTracks().forEach(t => t.stop()); updateUI(false); }
     function updateUI(c) { document.getElementById("btn-start").style.display = c ? "none" : "inline-block"; document.getElementById("btn-end").style.display = c ? "inline-block" : "none"; }
-    async function toggleRecord() { const btn = document.getElementById("recordBtn"); if (!mediaRec || mediaRec.state === "inactive") { try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); mediaRec = new MediaRecorder(stream); chunks = []; mediaRec.ondataavailable = e => chunks.push(e.data); mediaRec.onstop = () => { const blob = new Blob(chunks, { type: 'audio/webm' }); const reader = new FileReader(); reader.readAsDataURL(blob); reader.onloadend = () => msgRef.push({ user: myName, type: 'audio', data: reader.result }); stream.getTracks().forEach(t => t.stop()); }; mediaRec.start(); btn.classList.add("recording"); } catch(e) { alert("الميكروفون مطلوب"); } } else { mediaRec.stop(); btn.classList.remove("recording"); } }
+    
+    // نظام تسجيل الصوت
+    async function toggleRecord() { 
+        const btn = document.getElementById("recordBtn"); 
+        if (!mediaRec || mediaRec.state === "inactive") { 
+            try { 
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); 
+                mediaRec = new MediaRecorder(stream); 
+                chunks = []; 
+                mediaRec.ondataavailable = e => chunks.push(e.data); 
+                mediaRec.onstop = () => { 
+                    const blob = new Blob(chunks, { type: 'audio/webm' }); 
+                    const reader = new FileReader(); 
+                    reader.readAsDataURL(blob); 
+                    reader.onloadend = () => msgRef.push({ user: myName, type: 'audio', data: reader.result }); 
+                    stream.getTracks().forEach(t => t.stop()); 
+                }; 
+                mediaRec.start(); 
+                btn.classList.add("recording"); 
+            } catch(e) { alert("الميكروفون مطلوب للتسجيل الصوتي"); } 
+        } else { mediaRec.stop(); btn.classList.remove("recording"); } 
+    }
 </script>
 </body>
 </html>
