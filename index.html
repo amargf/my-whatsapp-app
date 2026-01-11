@@ -88,7 +88,8 @@
 
     let myName = localStorage.getItem("chat_user");
     let msgRef, callRef, pc, localStream, mediaRec, chunks = [];
-    let callTimer = null; // مؤقت لمنع إرسال المكالمة فوراً
+    let callTimer = null;
+    let currentCallData = null; // لتتبع المكالمة الحالية وإغلاقها برمجياً
     const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
     if(myName) { 
@@ -123,19 +124,34 @@
     function startApp(path) {
         msgRef = firebase.database().ref("messages/" + path);
         callRef = firebase.database().ref("calls/" + path);
+        
         msgRef.on("child_added", s => {
             const d = s.val();
             let html = d.type === 'audio' ? `<audio controls src="${d.data}"></audio>` : d.text;
             document.getElementById("chat-box").innerHTML += `<div class="message ${d.user===myName?'sent':'received'}"><small>${d.user}</small><br>${html}</div>`;
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
+
         callRef.on("child_added", async s => {
             const d = s.val();
-            if(d.type === "offer" && d.from !== myName) { if(confirm("مكالمة من " + d.from)) acceptCall(d); else endCall(); }
+            if(d.type === "offer" && d.from !== myName) {
+                currentCallData = s.key; 
+                // نافذة مخصصة بدلاً من confirm لضمان إغلاقها برمجياً
+                if(confirm("مكالمة من " + d.from)) {
+                    acceptCall(d);
+                } else {
+                    endCall();
+                }
+            }
             if(d.type === "answer" && d.to === myName && pc) { await pc.setRemoteDescription(new RTCSessionDescription(d.sdp)); }
             if(d.type === "candidate" && d.from !== myName && pc) { pc.addIceCandidate(new RTCIceCandidate(d.cand)).catch(e=>{}); }
         });
-        callRef.on("child_removed", () => stopAllMedia());
+
+        // هذا الجزء هو المسؤول عن إخفاء المكالمة عند الطرف الآخر فور قيامك بالإلغاء
+        callRef.on("child_removed", () => {
+            stopAllMedia();
+            currentCallData = null;
+        });
     }
 
     async function toggleRecord() {
@@ -159,8 +175,7 @@
     }
 
     async function startCall() {
-        updateUI(true); // إظهار زر الإغلاق فوراً عندك
-        
+        updateUI(true);
         pc = new RTCPeerConnection(iceServers);
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
@@ -170,10 +185,10 @@
         const o = await pc.createOffer();
         await pc.setLocalDescription(o);
 
-        // الانتظار ثانية واحدة قبل الإرسال الفعلي للسيرفر
         callTimer = setTimeout(() => {
-            callRef.push({type:"offer", from:myName, sdp:o});
-            callTimer = "SENT"; // علامة أن المكالمة أُرسلت فعلياً
+            const newCall = callRef.push({type:"offer", from:myName, sdp:o});
+            currentCallData = newCall.key;
+            callTimer = "SENT";
         }, 1200); 
     }
 
@@ -190,11 +205,11 @@
     }
 
     function endCall() { 
-        // إذا تم الإلغاء قبل مرور الوقت المحدد، نقوم بمسح المؤقت
         if (callTimer && callTimer !== "SENT") {
             clearTimeout(callTimer);
             callTimer = null;
         } else if (callRef) {
+            // حذف السجل بالكامل يضمن اختفاء التنبيه عند الآخر
             callRef.remove(); 
         }
         stopAllMedia(); 
@@ -211,6 +226,7 @@
         document.getElementById("btn-start").style.display = c ? "none" : "inline-block";
         document.getElementById("btn-end").style.display = c ? "inline-block" : "none";
     }
+    
     function sendText() {
         const i = document.getElementById("msgInput");
         if(i.value) { msgRef.push({user: myName, text: i.value, type: 'text'}); i.value = ""; }
