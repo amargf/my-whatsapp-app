@@ -23,7 +23,7 @@
         .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 85%; max-width: 400px; }
         .room-input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 10px; background: #2a3942; color: white; border: 1px solid #3b4a54; font-size: 16px; text-align: center; }
         .hidden { display: none !important; }
-        #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-bottom: 3px solid #00a884; transition: all 0.3s ease; }
+        #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-bottom: 3px solid #00a884; }
         audio { height: 35px; width: 200px; filter: invert(100%); margin-top: 5px; }
     </style>
 </head>
@@ -97,7 +97,12 @@
 
     function login() {
         const val = document.getElementById('username-input').value.trim();
-        if(val) { myName = val; localStorage.setItem("chat_user", val); document.getElementById('login-card').classList.add('hidden'); document.getElementById('rooms-card').classList.remove('hidden'); }
+        if(val) { 
+            myName = val; 
+            localStorage.setItem("chat_user", val); 
+            document.getElementById('login-card').classList.add('hidden'); 
+            document.getElementById('rooms-card').classList.remove('hidden'); 
+        }
     }
 
     function handleJoin() {
@@ -105,9 +110,8 @@
         const pass = document.getElementById('room-pass-input').value.trim();
         if(roomID && pass) {
             document.getElementById('overlay').classList.add('hidden');
-            // التعديل الجذري: دمج اسم الغرفة مع كلمة السر في مسار واحد
-            // هذا يضمن أن من يخطئ في كلمة السر يدخل "عالم موازي" لا يراك فيه
-            const securePath = btoa(roomID + "_" + pass).replace(/=/g, ""); 
+            // طريقة الربط المباشر والآمنة لضمان عدم تعليق الواجهة
+            const securePath = roomID + "_v_" + pass; 
             document.getElementById('current-room-name').innerText = roomID;
             startApp(securePath);
         }
