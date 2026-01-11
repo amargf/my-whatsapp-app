@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>واتساب العرب - نسخة المتصفح</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         /* إصلاح الهيكل لضمان ظهور العناصر في المتصفح */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
@@ -21,8 +22,8 @@
         footer { background: #202c33; padding: 12px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; position: relative; bottom: 0; width: 100%; box-sizing: border-box; }
         
         #msgInput { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
-        .icon-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #8696a0; padding: 0 5px; }
-        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }
+        .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #8696a0; padding: 0 5px; }
+        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
         /* واجهة الاختيار */
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
@@ -37,18 +38,21 @@
 
 <div id="overlay">
     <div id="step-name" class="modal-card">
+        <i class="fas fa-user-circle" style="font-size: 50px; color: #00a884; margin-bottom: 15px;"></i>
         <h2>أهلاً بك</h2>
         <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
         <button class="custom-btn btn-green" onclick="saveUsername()">متابعة</button>
     </div>
 
     <div id="step-choice" class="modal-card hidden">
+        <i class="fas fa-comments" style="font-size: 50px; color: #00a884; margin-bottom: 15px;"></i>
         <h2>الدخول للدردشة</h2>
         <p style="color: #8696a0; font-size: 14px;">يجب إنشاء أو دخول غرفة خاصة مشفرة</p>
         <button class="custom-btn btn-green" onclick="showPrivateForm()">دخول غرفة خاصة</button>
     </div>
 
     <div id="step-private" class="modal-card hidden">
+        <i class="fas fa-lock" style="font-size: 50px; color: #00a884; margin-bottom: 15px;"></i>
         <h2>بيانات الغرفة</h2>
         <input type="text" id="room-name-input" class="modern-input" placeholder="اسم الغرفة">
         <input type="password" id="room-pass-input" class="modern-input" placeholder="كلمة السر">
@@ -57,17 +61,19 @@
 </div>
 
 <header>
-    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px; cursor:pointer;">خروج</button>
-    <div id="room-display">الرئيسية</div>
+    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px; cursor:pointer;">
+        <i class="fas fa-sign-out-alt"></i> خروج
+    </button>
+    <div id="room-display"><i class="fas fa-home"></i> الرئيسية</div>
     <div style="width:40px"></div>
 </header>
 
 <div id="chat-box"></div>
 
 <footer>
-    <button class="icon-btn" onclick="sendImageUrl()">🖼️</button>
+    <button class="icon-btn" onclick="sendImageUrl()"><i class="fas fa-image"></i></button>
     <input type="text" id="msgInput" placeholder="اكتب رسالة...">
-    <button class="send-btn" onclick="sendMessage()">➤</button>
+    <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
 </footer>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -100,8 +106,6 @@
         document.getElementById('step-private').classList.remove('hidden');
     }
 
-    // تم حذف وظيفة joinPublic لتعطيل الشات العام
-
     function joinPrivate() {
         let roomName = document.getElementById('room-name-input').value.trim();
         let roomPass = document.getElementById('room-pass-input').value.trim();
@@ -116,17 +120,17 @@
             document.getElementById("overlay").classList.add("hidden");
             if (!data) {
                 roomRef.set({ password: roomPass });
-                setupChat("غرفة: " + roomName, "private_" + roomName);
+                setupChat("<i class='fas fa-door-open'></i> غرفة: " + roomName, "private_" + roomName);
             } else if (data.password === roomPass) {
-                setupChat("غرفة: " + roomName, "private_" + roomName);
+                setupChat("<i class='fas fa-lock-open'></i> غرفة: " + roomName, "private_" + roomName);
             } else {
-                setupChat("غرفة: " + roomName, "fake_" + roomName + "_" + roomPass);
+                setupChat("<i class='fas fa-user-secret'></i> غرفة وهمية: " + roomName, "fake_" + roomName + "_" + roomPass);
             }
         });
     }
 
     function setupChat(displayName, dbPath) {
-        document.getElementById("room-display").innerText = displayName;
+        document.getElementById("room-display").innerHTML = displayName;
         messagesRef = firebase.database().ref("messages/" + dbPath);
 
         messagesRef.on("child_added", (snapshot) => {
@@ -163,6 +167,5 @@
 
     document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
 </script>
-
 </body>
 </html>
