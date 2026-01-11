@@ -36,7 +36,7 @@
 </div>
 
 <div id="call-ui" class="hidden">
-    <div style="color: #00a884; font-weight: bold;"><i class="fas fa-phone-alt-slash fa-pulse"></i> مكالمة من: <span id="caller-name">...</span></div>
+    <div style="color: #00a884; font-weight: bold;"><i class="fas fa-phone-alt fa-pulse"></i> مكالمة من: <span id="caller-name">...</span></div>
     <div style="display:flex; gap:10px;">
         <button onclick="answerIncomingCall()" style="background:#00a884; color:white; border:none; border-radius:50%; width:40px; height:40px;"><i class="fas fa-phone"></i></button>
         <button onclick="endCall()" style="background:#ea0038; color:white; border:none; border-radius:50%; width:40px; height:40px;"><i class="fas fa-phone-slash"></i></button>
@@ -45,21 +45,29 @@
 
 <div id="overlay">
     <div id="login-card" class="modal-card">
+        <i class="fas fa-user-circle" style="font-size: 50px; color: #00a884; margin-bottom: 15px;"></i>
         <h3>مرحباً بك يا سيد</h3>
         <input type="text" id="username-input" class="room-input" placeholder="ادخل اسمك">
-        <button onclick="login()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">متابعة</button>
+        <button onclick="login()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">
+            <i class="fas fa-sign-in-alt"></i> متابعة
+        </button>
     </div>
     <div id="rooms-card" class="modal-card hidden">
+        <i class="fas fa-door-open" style="font-size: 50px; color: #00a884; margin-bottom: 15px;"></i>
         <h3>دخول الغرفة</h3>
         <input type="text" id="room-id-input" class="room-input" placeholder="اسم الغرفة">
         <input type="password" id="room-pass-input" class="room-input" placeholder="كلمة السر">
-        <button onclick="handleJoin()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">دخول</button>
+        <button onclick="handleJoin()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">
+            <i class="fas fa-lock"></i> دخول آمن
+        </button>
     </div>
 </div>
 
 <header>
-    <button onclick="exitToRooms()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 12px;">خروج</button>
-    <div id="current-room-name" style="font-weight: bold;"></div>
+    <button onclick="exitToRooms()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 12px;">
+        <i class="fas fa-arrow-right"></i> خروج
+    </button>
+    <div id="current-room-name" style="font-weight: bold;"> <i class="fas fa-users"></i> </div>
     <div>
         <i id="btn-end" class="fas fa-phone-slash" style="color:#ea0038; display:none; cursor:pointer; font-size: 22px;" onclick="endCall()"></i>
         <i id="btn-start" class="fas fa-phone-alt" style="color:#00a884; cursor:pointer; font-size: 22px;" onclick="startCall()"></i>
@@ -83,7 +91,7 @@
     firebase.initializeApp(config);
 
     let myName = localStorage.getItem("chat_user");
-    let savedRoom = localStorage.getItem("chat_room"); // استرجاع الغرفة المحفوظة
+    let savedRoom = localStorage.getItem("chat_room");
     let msgRef, callRef, pc, localStream, mediaRec, chunks = [];
     let callTimer = null;
     let pendingOffer = null; 
@@ -95,7 +103,6 @@
             if(s) { s.style.opacity = '0'; setTimeout(() => s.remove(), 800); }
         }, 1500);
 
-        // وضع اسم الغرفة تلقائياً إذا كان موجوداً
         if(savedRoom) {
             document.getElementById('room-id-input').value = savedRoom;
         }
@@ -121,9 +128,9 @@
         const r = document.getElementById('room-id-input').value.trim();
         const p = document.getElementById('room-pass-input').value.trim();
         if(r && p) {
-            localStorage.setItem("chat_room", r); // حفظ اسم الغرفة في الذاكرة
+            localStorage.setItem("chat_room", r);
             const finalPath = r + p; 
-            document.getElementById('current-room-name').innerText = r;
+            document.getElementById('current-room-name').innerHTML = `<i class="fas fa-hashtag"></i> ${r}`;
             document.getElementById('overlay').classList.add('hidden');
             startApp(finalPath);
         }
@@ -143,7 +150,7 @@
         msgRef.on("child_added", s => {
             const d = s.val();
             let html = d.type === 'audio' ? `<audio controls preload="auto"><source src="${d.data}" type="audio/webm"></audio>` : d.text;
-            document.getElementById("chat-box").innerHTML += `<div class="message ${d.user===myName?'sent':'received'}"><small>${d.user}</small><br>${html}</div>`;
+            document.getElementById("chat-box").innerHTML += `<div class="message ${d.user===myName?'sent':'received'}"><small><i class="fas fa-user-edit"></i> ${d.user}</small><br>${html}</div>`;
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
 
