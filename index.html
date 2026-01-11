@@ -8,31 +8,24 @@
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #0b141a; display: flex; flex-direction: column; color: white; }
-        
         header { background-color: #202c33; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; }
-        
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: rgba(11, 20, 26, 0.9); background-blend-mode: overlay; }
-        
         .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; word-wrap: break-word; position: relative; }
         .sent { align-self: flex-end; background-color: #005c4b; }
         .received { align-self: flex-start; background-color: #202c33; }
-        .msg-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
-        
-        /* تنسيق الوقت */
         .msg-time { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; text-align: left; display: block; }
-
         footer { background: #202c33; padding: 12px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; position: relative; bottom: 0; width: 100%; box-sizing: border-box; }
-        
         #msgInput { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
         .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #8696a0; padding: 0 5px; }
         .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-card { background: #222e35; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
         .custom-btn { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 25px; font-size: 16px; cursor: pointer; font-weight: bold; }
         .btn-green { background-color: #00a884; color: white; }
         .hidden { display: none !important; }
         .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; }
+        /* زر الاتصال */
+        .call-btn { color: #00a884; font-size: 22px; cursor: pointer; margin-right: 15px; }
     </style>
 </head>
 <body>
@@ -44,14 +37,11 @@
         <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
         <button class="custom-btn btn-green" onclick="saveUsername()">متابعة</button>
     </div>
-
     <div id="step-choice" class="modal-card hidden">
         <i class="fas fa-comments" style="font-size: 50px; color: #00a884; margin-bottom: 15px;"></i>
         <h2>الدخول للدردشة</h2>
-        <p style="color: #8696a0; font-size: 14px;">يجب إنشاء أو دخول غرفة خاصة مشفرة</p>
         <button class="custom-btn btn-green" onclick="showPrivateForm()">دخول غرفة خاصة</button>
     </div>
-
     <div id="step-private" class="modal-card hidden">
         <i class="fas fa-lock" style="font-size: 50px; color: #00a884; margin-bottom: 15px;"></i>
         <h2>بيانات الغرفة</h2>
@@ -62,14 +52,15 @@
 </div>
 
 <header>
-    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px; cursor:pointer;">
-        <i class="fas fa-sign-out-alt"></i> خروج
-    </button>
-    <div id="room-display"><i class="fas fa-home"></i> الرئيسية</div>
-    <div style="width:40px"></div>
+    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px; cursor:pointer;"><i class="fas fa-sign-out-alt"></i> خروج</button>
+    <div id="room-display">الرئيسية</div>
+    <div>
+        <i class="fas fa-phone-alt call-btn" onclick="startCall()" title="اتصال صوتي"></i>
+    </div>
 </header>
 
 <div id="chat-box"></div>
+<audio id="remoteAudio" autoplay></audio>
 
 <footer>
     <button class="icon-btn" onclick="sendImageUrl()"><i class="fas fa-image"></i></button>
@@ -86,6 +77,12 @@
 
     let currentUsername = localStorage.getItem("chat_user");
     let messagesRef = null;
+    let callRef = null;
+    let pc = null;
+    let localStream = null;
+
+    // خوادم STUN من جوجل
+    const servers = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
 
     if(currentUsername) {
         document.getElementById('step-name').classList.add('hidden');
@@ -94,12 +91,7 @@
 
     function saveUsername() {
         const val = document.getElementById('username-input').value.trim();
-        if(val) {
-            currentUsername = val;
-            localStorage.setItem("chat_user", val);
-            document.getElementById('step-name').classList.add('hidden');
-            document.getElementById('step-choice').classList.remove('hidden');
-        }
+        if(val) { currentUsername = val; localStorage.setItem("chat_user", val); document.getElementById('step-name').classList.add('hidden'); document.getElementById('step-choice').classList.remove('hidden'); }
     }
 
     function showPrivateForm() {
@@ -110,48 +102,81 @@
     function joinPrivate() {
         let roomName = document.getElementById('room-name-input').value.trim();
         let roomPass = document.getElementById('room-pass-input').value.trim();
-        if(!roomName || !roomPass) {
-            alert("يرجى إدخال اسم الغرفة وكلمة السر");
-            return;
-        }
+        if(!roomName || !roomPass) return alert("يرجى إدخال البيانات");
 
         const roomRef = firebase.database().ref("room_settings/" + roomName);
         roomRef.once('value').then((snapshot) => {
             const data = snapshot.val();
             document.getElementById("overlay").classList.add("hidden");
-            if (!data) {
-                roomRef.set({ password: roomPass });
-                setupChat("<i class='fas fa-door-open'></i> غرفة: " + roomName, "private_" + roomName);
-            } else if (data.password === roomPass) {
-                setupChat("<i class='fas fa-lock-open'></i> غرفة: " + roomName, "private_" + roomName);
-            } else {
-                setupChat("<i class='fas fa-user-secret'></i> غرفة وهمية: " + roomName, "fake_" + roomName + "_" + roomPass);
-            }
+            const dbPath = (data && data.password !== roomPass) ? "fake_" + roomName + "_" + roomPass : "private_" + roomName;
+            if (!data) roomRef.set({ password: roomPass });
+            setupChat("غرفة: " + roomName, dbPath);
+            setupCallSync(dbPath);
         });
     }
 
     function setupChat(displayName, dbPath) {
-        document.getElementById("room-display").innerHTML = displayName;
+        document.getElementById("room-display").innerText = displayName;
         messagesRef = firebase.database().ref("messages/" + dbPath);
-
         messagesRef.on("child_added", (snapshot) => {
             const data = snapshot.val();
-            const chatBox = document.getElementById("chat-box");
-            const msgDiv = document.createElement("div");
             const isMe = data.user === currentUsername;
-            msgDiv.className = `message ${isMe ? 'sent' : 'received'}`;
-            
-            let content = `<small style="color:${isMe ? '#8696a0' : '#ffd700'}">${data.user}</small><br>`;
-            if(data.type === 'image') content += `<img src="${data.url}" class="msg-img">`;
-            else content += data.text;
+            const content = `<div class="message ${isMe ? 'sent' : 'received'}"><small style="color:${isMe ? '#8696a0' : '#ffd700'}">${data.user}</small><br>${data.type==='image' ? `<img src="${data.url}" class="msg-img">` : data.text}<span class="msg-time">${data.time || ''}</span></div>`;
+            document.getElementById("chat-box").innerHTML += content;
+            document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+        });
+    }
 
-            // إضافة الوقت أسفل الرسالة
-            const timeStr = data.time ? data.time : "";
-            content += `<span class="msg-time">${timeStr}</span>`;
+    // --- منطق الاتصال الصوتي WebRTC ---
+    async function setupCallSync(dbPath) {
+        callRef = firebase.database().ref("calls/" + dbPath);
+        callRef.on("child_added", async (snapshot) => {
+            const data = snapshot.val();
+            if (data.to === currentUsername && data.type === "offer") {
+                if (confirm("مكالمة واردة من " + data.from + ". هل تقبل؟")) {
+                    await answerCall(data);
+                }
+            }
+        });
+    }
 
-            msgDiv.innerHTML = content;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+    async function startCall() {
+        pc = new RTCPeerConnection(servers);
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        
+        pc.onicecandidate = (e) => {
+            if (e.candidate) callRef.push({ type: 'candidate', from: currentUsername, candidate: e.candidate.toJSON() });
+        };
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        callRef.push({ type: 'offer', from: currentUsername, to: 'everyone', sdp: offer.sdp });
+        alert("جاري الاتصال بجميع من في الغرفة...");
+    }
+
+    async function answerCall(offerData) {
+        pc = new RTCPeerConnection(servers);
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+        pc.ontrack = (e) => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
+        pc.onicecandidate = (e) => {
+            if (e.candidate) callRef.push({ type: 'candidate', from: currentUsername, candidate: e.candidate.toJSON() });
+        };
+
+        await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offerData.sdp }));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        callRef.push({ type: 'answer', from: currentUsername, to: offerData.from, sdp: answer.sdp });
+
+        callRef.on("child_added", (snapshot) => {
+            const data = snapshot.val();
+            if (data.type === "answer" && data.to === currentUsername) {
+                pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: data.sdp }));
+            } else if (data.type === "candidate" && data.from !== currentUsername) {
+                pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
         });
     }
 
@@ -159,8 +184,7 @@
         const input = document.getElementById("msgInput");
         if (input.value.trim() !== "" && messagesRef) {
             const now = new Date();
-            const timeStr = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0');
-            messagesRef.push({ user: currentUsername, text: input.value, type: 'text', time: timeStr });
+            messagesRef.push({ user: currentUsername, text: input.value, type: 'text', time: now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0') });
             input.value = "";
         }
     }
@@ -169,11 +193,9 @@
         const url = prompt("الصق رابط الصورة هنا:");
         if(url && messagesRef) {
             const now = new Date();
-            const timeStr = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0');
-            messagesRef.push({ user: currentUsername, url: url, type: 'image', time: timeStr });
+            messagesRef.push({ user: currentUsername, url: url, type: 'image', time: now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0') });
         }
     }
-
     document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
 </script>
 </body>
