@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب العرب - المطور</title>
+    <title>واتساب العرب</title>
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #0b141a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; }
         #splash-screen { position: fixed; inset: 0; background: #0b141a; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; transition: opacity 0.8s ease; }
@@ -11,22 +11,22 @@
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         header { background-color: #202c33; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; height: 60px; }
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: rgba(11,20,26,0.9); }
-        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; word-wrap: break-word; line-height: 1.4; cursor: pointer; }
+        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; word-wrap: break-word; cursor: pointer; }
         .sent { align-self: flex-end; background-color: #005c4b; border-bottom-right-radius: 2px; }
         .received { align-self: flex-start; background-color: #202c33; border-bottom-left-radius: 2px; }
         .message small { font-size: 11px; font-weight: bold; display: block; margin-bottom: 2px; }
-        footer { background: #202c33; padding: 10px 10px 15px 10px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; border-top: 1px solid #3b4a54; position: relative; }
+        footer { background: #202c33; padding: 10px 10px 15px 10px; display: flex; gap: 8px; align-items: center; border-top: 1px solid #3b4a54; position: relative; }
         #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
         .icon-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .icon-btn svg { width: 20px; height: 20px; fill: white; }
         .recording { background: #ea0038 !important; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 85%; max-width: 400px; }
-        .room-input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 10px; background: #2a3942; color: white; border: 1px solid #3b4a54; font-size: 16px; text-align: center; }
+        .room-input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 10px; background: #2a3942; color: white; border: 1px solid #3b4a54; text-align: center; }
         .hidden { display: none !important; }
-        #char-count { position: absolute; top: -20px; left: 20px; font-size: 10px; color: #00a884; }
-        audio { max-width: 100%; height: 35px; margin-top: 5px; }
+        #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; }
+        .svg-icon { width: 24px; height: 24px; fill: currentColor; cursor: pointer; }
+        audio { max-width: 100%; height: 30px; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -34,62 +34,61 @@
 <div id="splash-screen">
     <div class="splash-logo"><svg viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-5.5-2.8-23.2-8.5-44.2-27.1-16.4-14.6-27.4-32.7-30.6-38.2-3.2-5.6-.3-8.6 2.5-11.3 2.5-2.5 5.6-6.5 8.3-9.7 2.8-3.3 3.7-5.6 5.6-9.3 1.9-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 13.2 5.8 23.5 9.2 31.5 11.8 13.3 4.2 25.4 3.6 35 2.2 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg></div>
     <h2 style="color: #00a884;">واتساب العرب</h2>
-    <p>بإدارة السيد AmarGf</p>
+    <p>إدارة AmarGf</p>
+</div>
+
+<div id="call-ui" class="hidden">
+    <div style="color: #00a884;">مكالمة من: <span id="caller-name">...</span></div>
+    <button onclick="answerIncomingCall()" class="icon-btn" style="width:35px;height:35px;">✔</button>
+    <button onclick="endCall()" class="icon-btn" style="background:#ea0038;width:35px;height:35px;">✖</button>
 </div>
 
 <div id="overlay">
     <div id="login-card" class="modal-card">
-        <h3>رمز الدخول الملكي</h3>
-        <input type="password" id="master-pass-input" class="room-input" placeholder="أدخل الرمز السري">
-        <button onclick="checkMasterPass()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">دخول</button>
+        <h3>الرمز السري</h3>
+        <input type="password" id="master-pass-input" class="room-input" placeholder="الرمز الملكي">
+        <button onclick="checkMasterPass()" style="background:#00a884; color:white; padding:10px; border:none; width:100%; border-radius:10px;">دخول</button>
     </div>
     <div id="user-card" class="modal-card hidden">
-        <h3>مرحباً بك</h3>
-        <input type="text" id="username-input" class="room-input" placeholder="ادخل اسمك">
-        <button onclick="saveUser()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">متابعة</button>
+        <input type="text" id="username-input" class="room-input" placeholder="اسمك">
+        <button onclick="saveUser()" style="background:#00a884; color:white; padding:10px; border:none; width:100%; border-radius:10px;">بدء</button>
     </div>
     <div id="rooms-card" class="modal-card hidden">
-        <h3>دخول الغرفة</h3>
         <input type="text" id="room-id-input" class="room-input" placeholder="اسم الغرفة">
         <input type="password" id="room-pass-input" class="room-input" placeholder="كلمة سر الغرفة">
-        <button onclick="handleJoin()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">دخول آمن</button>
+        <button onclick="handleJoin()" style="background:#00a884; color:white; padding:10px; border:none; width:100%; border-radius:10px;">دخول</button>
     </div>
 </div>
 
 <header>
-    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 12px; font-weight:bold;">خروج</button>
-    <div id="current-room-name" style="font-weight: bold;">واتساب العرب</div>
-    <div style="width: 40px;"></div>
+    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:5px; padding:5px 10px;">خروج</button>
+    <div id="current-room-name">دردشة</div>
+    <div>
+        <span id="btn-start" onclick="startCall()"><svg class="svg-icon" viewBox="0 0 512 512" style="color:#00a884;"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></svg></span>
+        <span id="btn-end" class="hidden" onclick="endCall()"><svg class="svg-icon" viewBox="0 0 512 512" style="color:#ea0038;"><path d="M511.2 387l-23.3 87c-4.7 17.4-20.6 29.5-38.7 29.5C200.6 503.5 0 302.9 0 55.5c0-18.1 12.1-34 29.5-38.7l87-23.3c19.4-5.2 39.7 4.7 47.4 23.3l40 96c6.8 16.3 2.1 35.2-11.6 46.3L143.5 199c33.3 70.4 90.3 127.4 160.7 160.7l39.9-48.9c11.1-13.6 30-18.3 46.3-11.6l96 40c18.6 7.7 28.5 28 23.3 47.4l-12.5 4.5z"/></svg></span>
+    </div>
 </header>
 
 <div id="chat-box"></div>
+<audio id="remoteAudio" autoplay playsinline></audio>
 
 <footer>
-    <div id="char-count">0/200</div>
-    <button id="recordBtn" class="icon-btn" onclick="toggleRecord()"><svg viewBox="0 0 384 512"><path d="M192 0C139 0 96 43 96 96V256c0 53 43 96 96 96s96-43 96-96V96c0-53-43-96-96-96zM64 216c0-13.3-10.7-24-24-24s-24 10.7-24 24v40c0 89.1 66.2 162.7 152 174.4V464H120c-13.3 0-24 10.7-24 24s10.7 24 24 24h144c13.3 0 24-10.7 24-24s-10.7-24-24-24H216V430.4c85.8-11.7 152-85.3 152-174.4V216c0-13.3-10.7-24-24-24s-24 10.7-24 24v40c0 70.7-57.3 128-128 128s-128-57.3-128-128V216z"/></svg></button>
-    <input type="text" id="msgInput" placeholder="اكتب رسالة..." maxlength="200">
-    <button class="icon-btn" onclick="sendText()"><svg viewBox="0 0 512 512"><path d="M498.1 5.6c10.1 7 15.4 19.1 13.5 31.2l-64 416c-1.5 9.7-7.4 18.2-16 23s-18.9 5.4-28 1.6L284 427.7l-68.5 74.1c-8.9 9.7-22.9 12.9-35.2 8.1S160 493.2 160 480V396.4c0-4 1.5-7.8 4.2-10.7L415.9 134.7c6.2-6.2 1.8-16.7-7.1-16.7c-2.4 0-4.7 1-6.4 2.7L134 391.8l-102.3-43c-11.4-4.8-19.1-15.6-20-28s5.2-23.9 15.6-29.4l448-240c10.6-5.7 23.4-5 33.2 2.1z"/></svg></button>
+    <button id="recordBtn" class="icon-btn" onclick="toggleRecord()">🎤</button>
+    <input type="text" id="msgInput" placeholder="رسالة..." maxlength="200">
+    <button class="icon-btn" onclick="sendText()">➤</button>
 </footer>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-    const config = { databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(config);
+    firebase.initializeApp({ databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" });
+    let myName = localStorage.getItem("chat_user"), msgRef, callRef, pc, localStream, mediaRec, chunks = [], pendingOffer = null;
 
-    let myName = localStorage.getItem("chat_user");
-    let msgRef, mediaRec, chunks = [];
-    const userColors = {};
-
-    function getUserColor(name) {
-        if (!userColors[name]) {
-            const colors = ['#34b7f1', '#ffbc38', '#e542a3', '#00e5c0', '#df5b5b', '#a5a5ff'];
-            let hash = 0;
-            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-            userColors[name] = colors[Math.abs(hash) % colors.length];
-        }
-        return userColors[name];
+    function getUserColor(n) {
+        let hash = 0; for(let i=0; i<n.length; i++) hash = n.charCodeAt(i) + ((hash << 5) - hash);
+        const colors = ['#34b7f1', '#ffbc38', '#e542a3', '#00e5c0', '#df5b5b'];
+        return colors[Math.abs(hash) % colors.length];
     }
 
     function checkMasterPass() {
@@ -97,21 +96,20 @@
             document.getElementById('login-card').classList.add('hidden');
             if(!myName) document.getElementById('user-card').classList.remove('hidden');
             else document.getElementById('rooms-card').classList.remove('hidden');
-        } else alert("الرمز السري الملكي خاطئ!");
+        } else alert("خطأ!");
     }
 
     function saveUser() {
-        const v = document.getElementById('username-input').value.trim();
+        let v = document.getElementById('username-input').value.trim();
         if(v) { myName = v; localStorage.setItem("chat_user", v); document.getElementById('user-card').classList.add('hidden'); document.getElementById('rooms-card').classList.remove('hidden'); }
     }
 
     function handleJoin() {
-        const r = document.getElementById('room-id-input').value.trim(), p = document.getElementById('room-pass-input').value.trim();
+        let r = document.getElementById('room-id-input').value.trim(), p = document.getElementById('room-pass-input').value.trim();
         if(r && p) {
-            let hash = 0; const str = r + p;
-            for (let i = 0; i < str.length; i++) { hash = (hash << 5) - hash + str.charCodeAt(i); hash |= 0; }
+            let hash = 0; let s = r+p; for(let i=0; i<s.length; i++) hash = (hash << 5) - hash + s.charCodeAt(i);
             const path = "room_" + Math.abs(hash);
-            document.getElementById('current-room-name').innerText = "# " + r;
+            document.getElementById('current-room-name').innerText = r;
             document.getElementById('overlay').classList.add('hidden');
             startApp(path);
         }
@@ -119,63 +117,89 @@
 
     function startApp(path) {
         msgRef = firebase.database().ref("enc_msgs/" + path);
+        callRef = firebase.database().ref("calls/" + path);
+
         msgRef.on("child_added", s => {
             const d = s.val(), id = s.key;
-            let content = d.type === 'audio' ? `<audio controls src="${d.data}"></audio>` : escapeHTML(d.text);
+            let content = d.type === 'audio' ? `<audio controls src="${d.data}"></audio>` : d.text;
             const html = `<div id="msg-${id}" class="message ${d.user === myName ? 'sent' : 'received'}" onclick="deleteMessage('${id}', '${d.user}')">
-                            <small style="color: ${getUserColor(d.user)}">${escapeHTML(d.user)}</small>${content}</div>`;
+                <small style="color:${getUserColor(d.user)}">${d.user}</small>${content}</div>`;
             document.getElementById("chat-box").insertAdjacentHTML('beforeend', html);
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
-        msgRef.on("child_removed", s => { const el = document.getElementById("msg-" + s.key); if(el) el.remove(); });
+        msgRef.on("child_removed", s => { let el = document.getElementById("msg-"+s.key); if(el) el.remove(); });
+
+        callRef.on("child_added", async s => {
+            const d = s.val();
+            if(d.type === "offer" && d.from !== myName) { pendingOffer = d; document.getElementById('caller-name').innerText = d.from; document.getElementById('call-ui').classList.remove('hidden'); }
+            if(d.type === "answer" && d.to === myName && pc) { await pc.setRemoteDescription(new RTCSessionDescription(d.sdp)); }
+            if(d.type === "candidate" && d.from !== myName && pc) { pc.addIceCandidate(new RTCIceCandidate(d.cand)).catch(()=>{}); }
+        });
+        callRef.on("child_removed", () => { document.getElementById('call-ui').classList.add('hidden'); stopAllMedia(); });
     }
 
-    function deleteMessage(id, owner) {
-        if (owner === myName && confirm("حذف الرسالة للجميع؟")) msgRef.child(id).remove();
-    }
+    function deleteMessage(id, user) { if(user === myName && confirm("حذف؟")) msgRef.child(id).remove(); }
 
     function sendText() {
-        const i = document.getElementById("msgInput"), val = i.value.trim();
-        if(val && val.length <= 200) { msgRef.push({user: myName, text: val, type: 'text'}); i.value = ""; document.getElementById('char-count').innerText = "0/200"; }
+        let i = document.getElementById("msgInput"), v = i.value.trim();
+        if(v) { msgRef.push({user: myName, text: v, type: 'text'}); i.value = ""; }
     }
 
-    // --- نظام تسجيل الصوت المطور لكروم ---
     async function toggleRecord() {
         const btn = document.getElementById("recordBtn");
         if (!mediaRec || mediaRec.state === "inactive") {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                
-                // تحديد الصيغة الأنسب لمتصفح كروم وأندرويد
                 let options = { mimeType: 'audio/webm;codecs=opus' };
-                if (!MediaRecorder.isTypeSupported(options.mimeType)) options = { mimeType: 'audio/ogg;codecs=opus' };
-
+                if (!MediaRecorder.isTypeSupported(options.mimeType)) options = { mimeType: 'audio/mp4' };
                 mediaRec = new MediaRecorder(stream, options);
                 chunks = [];
-                mediaRec.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
-                
+                mediaRec.ondataavailable = e => chunks.push(e.data);
                 mediaRec.onstop = () => {
-                    const blob = new Blob(chunks, { type: options.mimeType });
                     const reader = new FileReader();
-                    reader.readAsDataURL(blob);
-                    reader.onloadend = () => {
-                        msgRef.push({ user: myName, type: 'audio', data: reader.result });
-                    };
+                    reader.readAsDataURL(new Blob(chunks, { type: options.mimeType }));
+                    reader.onloadend = () => msgRef.push({ user: myName, type: 'audio', data: reader.result });
                     stream.getTracks().forEach(t => t.stop());
                 };
-
-                mediaRec.start();
-                btn.classList.add("recording");
-            } catch(e) { alert("يجب السماح للميكروفون للعمل!"); }
-        } else {
-            mediaRec.stop();
-            btn.classList.remove("recording");
-        }
+                mediaRec.start(); btn.classList.add("recording");
+            } catch(e) { alert("الميكروفون مطلوب"); }
+        } else { mediaRec.stop(); btn.classList.remove("recording"); }
     }
 
-    function escapeHTML(str) { const p = document.createElement('p'); p.textContent = str; return p.innerHTML; }
-    document.getElementById('msgInput').addEventListener('input', function() { document.getElementById('char-count').innerText = this.value.length + "/200"; });
-    window.onload = () => { setTimeout(() => { document.getElementById('splash-screen').style.opacity = '0'; setTimeout(()=>document.getElementById('splash-screen').remove(), 800); }, 1500); };
+    // --- نظام الاتصال ---
+    async function startCall() {
+        updateCallUI(true);
+        pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+        pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
+        pc.onicecandidate = e => { if(e.candidate) callRef.push({type:"candidate", from:myName, cand:e.candidate.toJSON()}); };
+        const o = await pc.createOffer(); await pc.setLocalDescription(o);
+        callRef.push({type:"offer", from:myName, sdp:o});
+    }
+
+    async function answerIncomingCall() {
+        if(!pendingOffer) return;
+        document.getElementById('call-ui').classList.add('hidden');
+        pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+        pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
+        pc.onicecandidate = e => { if(e.candidate) callRef.push({type:"candidate", from:myName, cand:e.candidate.toJSON()}); };
+        await pc.setRemoteDescription(new RTCSessionDescription(pendingOffer.sdp));
+        const a = await pc.createAnswer(); await pc.setLocalDescription(a);
+        callRef.push({type:"answer", from:myName, to:pendingOffer.from, sdp:a});
+        updateCallUI(true);
+    }
+
+    function endCall() { if(callRef) callRef.remove(); stopAllMedia(); }
+    function stopAllMedia() { if(pc) pc.close(); if(localStream) localStream.getTracks().forEach(t => t.stop()); updateCallUI(false); }
+    function updateCallUI(c) { 
+        document.getElementById("btn-start").classList.toggle("hidden", c);
+        document.getElementById("btn-end").classList.toggle("hidden", !c);
+    }
+
+    window.onload = () => setTimeout(() => { document.getElementById('splash-screen').style.opacity = '0'; setTimeout(()=>document.getElementById('splash-screen').remove(), 800); }, 1500);
 </script>
 </body>
 </html>
