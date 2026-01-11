@@ -23,7 +23,7 @@
         .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 85%; max-width: 400px; }
         .room-input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 10px; background: #2a3942; color: white; border: 1px solid #3b4a54; font-size: 16px; text-align: center; }
         .hidden { display: none !important; }
-        #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-bottom: 3px solid #00a884; }
+        #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         audio { height: 35px; width: 200px; filter: invert(100%); margin-top: 5px; }
     </style>
 </head>
@@ -90,6 +90,13 @@
     let pendingOffer = null; 
     const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
+    window.onload = () => {
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            if(splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 800); }
+        }, 1500);
+    };
+
     if(myName) { 
         document.getElementById('login-card').classList.add('hidden');
         document.getElementById('rooms-card').classList.remove('hidden');
@@ -109,10 +116,10 @@
         const roomID = document.getElementById('room-id-input').value.trim();
         const pass = document.getElementById('room-pass-input').value.trim();
         if(roomID && pass) {
-            document.getElementById('overlay').classList.add('hidden');
-            // طريقة الربط المباشر والآمنة لضمان عدم تعليق الواجهة
-            const securePath = roomID + "_v_" + pass; 
+            // استخدام "رقم تعريف" بسيط بدلاً من التشفير المعقد لتجنب تعليق الكروم
+            const securePath = "R_" + roomID + "_" + pass; 
             document.getElementById('current-room-name').innerText = roomID;
+            document.getElementById('overlay').classList.add('hidden');
             startApp(securePath);
         }
     }
@@ -131,7 +138,12 @@
         
         msgRef.on("child_added", s => {
             const d = s.val();
-            let html = d.type === 'audio' ? `<audio controls preload="metadata"><source src="${d.data}" type="audio/webm"></audio>` : d.text;
+            let html = "";
+            if(d.type === 'audio') {
+                html = `<audio controls preload="auto"><source src="${d.data}" type="audio/webm"></audio>`;
+            } else {
+                html = d.text;
+            }
             document.getElementById("chat-box").innerHTML += `<div class="message ${d.user===myName?'sent':'received'}"><small>${d.user}</small><br>${html}</div>`;
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
@@ -159,14 +171,16 @@
         if (!mediaRec || mediaRec.state === "inactive") {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRec = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                mediaRec = new MediaRecorder(stream);
                 chunks = [];
                 mediaRec.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
                 mediaRec.onstop = () => {
                     const blob = new Blob(chunks, { type: 'audio/webm' });
                     const reader = new FileReader(); 
                     reader.readAsDataURL(blob);
-                    reader.onloadend = () => msgRef.push({ user: myName, type: 'audio', data: reader.result });
+                    reader.onloadend = () => {
+                        msgRef.push({ user: myName, type: 'audio', data: reader.result });
+                    };
                     stream.getTracks().forEach(track => track.stop());
                 };
                 mediaRec.start(); btn.classList.add("recording"); icon.className = "fas fa-stop";
