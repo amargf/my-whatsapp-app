@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب العرب - النسخة الاحترافية</title>
+    <title>واتساب العرب - النسخة الملكية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #0b141a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; }
@@ -19,14 +19,16 @@
         #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
         .icon-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .recording { background: #ea0038 !important; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% {opacity: 1} 50% {opacity: 0.5} 100% {opacity: 1} }
-        .call-btn { color: #00a884; font-size: 22px; cursor: pointer; }
-        .end-btn { color: #ea0038; font-size: 22px; cursor: pointer; display: none; }
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 85%; max-width: 400px; }
         .room-input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 10px; background: #2a3942; color: white; border: 1px solid #3b4a54; font-size: 16px; text-align: center; }
         .hidden { display: none !important; }
-        audio { max-width: 100%; margin-top: 5px; }
+        
+        /* نافذة الاتصال الجديدة */
+        #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-bottom: 3px solid #00a884; }
+        .call-actions { display: flex; gap: 10px; }
+        .accept-btn { background: #00a884; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
+        .decline-btn { background: #ea0038; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -35,6 +37,14 @@
     <div class="splash-logo"><i class="fab fa-whatsapp"></i></div>
     <h2 style="color: #00a884;">واتساب العرب</h2>
     <p>أهلاً بك يا سيد</p>
+</div>
+
+<div id="call-ui" class="hidden">
+    <div style="color: #00a884; font-weight: bold;"><i class="fas fa-phone-alt"></i> مكالمة من: <span id="caller-name">...</span></div>
+    <div class="call-actions">
+        <button class="accept-btn" onclick="answerIncomingCall()"><i class="fas fa-check"></i></button>
+        <button class="decline-btn" onclick="endCall()"><i class="fas fa-times"></i></button>
+    </div>
 </div>
 
 <div id="overlay">
@@ -57,8 +67,8 @@
     <button onclick="exitToRooms()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 12px;">خروج</button>
     <div id="current-room-name" style="font-weight: bold;"></div>
     <div>
-        <i id="btn-end" class="fas fa-phone-slash end-btn" onclick="endCall()" style="margin-left:15px;"></i>
-        <i id="btn-start" class="fas fa-phone-alt call-btn" onclick="startCall()" style="margin-left:15px;"></i>
+        <i id="btn-end" class="fas fa-phone-slash" style="color:#ea0038; display:none; cursor:pointer;" onclick="endCall()"></i>
+        <i id="btn-start" class="fas fa-phone-alt" style="color:#00a884; cursor:pointer;" onclick="startCall()"></i>
     </div>
 </header>
 
@@ -83,13 +93,13 @@
         setTimeout(() => {
             const splash = document.getElementById('splash-screen');
             if(splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 800); }
-        }, 3000);
+        }, 2000);
     };
 
     let myName = localStorage.getItem("chat_user");
     let msgRef, callRef, pc, localStream, mediaRec, chunks = [];
     let callTimer = null;
-    let currentCallData = null; // لتتبع المكالمة الحالية وإغلاقها برمجياً
+    let pendingOffer = null; // لتخزين بيانات المكالمة الواردة
     const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
     if(myName) { 
@@ -135,22 +145,17 @@
         callRef.on("child_added", async s => {
             const d = s.val();
             if(d.type === "offer" && d.from !== myName) {
-                currentCallData = s.key; 
-                // نافذة مخصصة بدلاً من confirm لضمان إغلاقها برمجياً
-                if(confirm("مكالمة من " + d.from)) {
-                    acceptCall(d);
-                } else {
-                    endCall();
-                }
+                pendingOffer = d;
+                document.getElementById('caller-name').innerText = d.from;
+                document.getElementById('call-ui').classList.remove('hidden'); // إظهار النافذة البرمجية
             }
             if(d.type === "answer" && d.to === myName && pc) { await pc.setRemoteDescription(new RTCSessionDescription(d.sdp)); }
             if(d.type === "candidate" && d.from !== myName && pc) { pc.addIceCandidate(new RTCIceCandidate(d.cand)).catch(e=>{}); }
         });
 
-        // هذا الجزء هو المسؤول عن إخفاء المكالمة عند الطرف الآخر فور قيامك بالإلغاء
         callRef.on("child_removed", () => {
+            document.getElementById('call-ui').classList.add('hidden'); // إخفاء النافذة فوراً عند الطرف الآخر
             stopAllMedia();
-            currentCallData = null;
         });
     }
 
@@ -186,10 +191,13 @@
         await pc.setLocalDescription(o);
 
         callTimer = setTimeout(() => {
-            const newCall = callRef.push({type:"offer", from:myName, sdp:o});
-            currentCallData = newCall.key;
+            callRef.push({type:"offer", from:myName, sdp:o});
             callTimer = "SENT";
         }, 1200); 
+    }
+
+    function answerIncomingCall() {
+        if(pendingOffer) { acceptCall(pendingOffer); document.getElementById('call-ui').classList.add('hidden'); }
     }
 
     async function acceptCall(o) {
@@ -205,19 +213,15 @@
     }
 
     function endCall() { 
-        if (callTimer && callTimer !== "SENT") {
-            clearTimeout(callTimer);
-            callTimer = null;
-        } else if (callRef) {
-            // حذف السجل بالكامل يضمن اختفاء التنبيه عند الآخر
-            callRef.remove(); 
-        }
+        if (callTimer && callTimer !== "SENT") { clearTimeout(callTimer); callTimer = null; } 
+        else if (callRef) { callRef.remove(); }
+        document.getElementById('call-ui').classList.add('hidden');
         stopAllMedia(); 
     }
 
     function stopAllMedia() { 
         if(pc) { pc.close(); pc = null; } 
-        if(localStream) { localStream.getTracks().forEach(track => { track.stop(); track.enabled = false; }); localStream = null; } 
+        if(localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; } 
         document.getElementById("remoteAudio").srcObject = null;
         updateUI(false); 
     }
