@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب العرب - الغرف المحمية</title>
+    <title>واتساب العرب - النسخة النهائية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #0b141a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; }
@@ -12,7 +12,18 @@
         .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; word-wrap: break-word; }
         .sent { align-self: flex-end; background-color: #005c4b; }
         .received { align-self: flex-start; background-color: #202c33; }
-        footer { background: #202c33; padding: 10px 10px 45px 10px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; border-top: 1px solid #3b4a54; }
+
+        /* تعديل مكان الكتابة ليصبح منخفضاً قليلاً (تم تقليل padding-bottom) */
+        footer { 
+            background: #202c33; 
+            padding: 10px 10px 15px 10px; /* تم تقليل الارتفاع عن أزرار الأندرويد ليكون أكثر واقعية */
+            display: flex; 
+            gap: 8px; 
+            align-items: center; 
+            flex-shrink: 0; 
+            border-top: 1px solid #3b4a54;
+        }
+        
         #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
         .icon-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .recording { background: #ea0038 !important; animation: pulse 1s infinite; }
@@ -70,7 +81,6 @@
     const config = { databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(config);
 
-    // --- كلمة السر الحقيقية ---
     const REAL_PASSWORD = "123"; 
 
     let myName = localStorage.getItem("chat_user");
@@ -93,10 +103,8 @@
     function handleJoin() {
         const roomID = document.getElementById('room-id-input').value.trim();
         const pass = document.getElementById('room-pass-input').value.trim();
-        
         if(roomID && pass) {
             document.getElementById('overlay').classList.add('hidden');
-            // التمويه: إذا أخطأ يدخل لغرفة وهمية بنفس الاسم مسبوقاً بـ Fake_
             const finalPath = (pass === REAL_PASSWORD) ? roomID : "Fake_" + roomID;
             document.getElementById('current-room-name').innerText = roomID;
             startApp(finalPath);
@@ -106,14 +114,12 @@
     function startApp(path) {
         msgRef = firebase.database().ref("messages/" + path);
         callRef = firebase.database().ref("calls/" + path);
-
         msgRef.on("child_added", s => {
             const d = s.val();
             let html = d.type === 'audio' ? `<audio controls src="${d.data}"></audio>` : d.text;
             document.getElementById("chat-box").innerHTML += `<div class="message ${d.user===myName?'sent':'received'}"><small>${d.user}</small><br>${html}</div>`;
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
-
         callRef.on("child_added", async s => {
             const d = s.val();
             if(d.type === "offer" && d.from !== myName) { if(confirm("مكالمة من " + d.from)) acceptCall(d); }
