@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب العرب - النسخة المستقرة</title>
+    <title>واتساب العرب - النسخة الشاملة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         /* إعدادات الشاشة الكاملة لضمان عدم الاختفاء */
@@ -17,7 +17,7 @@
         .sent { align-self: flex-end; background-color: #005c4b; }
         .received { align-self: flex-start; background-color: #202c33; }
 
-        /* الفوتر مرفوع بوضوح لتجنب أزرار الأندرويد في صورتك */
+        /* الفوتر مرفوع بوضوح لتجنب أزرار الأندرويد */
         footer { 
             background: #202c33; 
             padding: 10px 10px 45px 10px; 
@@ -37,8 +37,16 @@
         .call-btn { color: #00a884; font-size: 22px; cursor: pointer; }
         .end-btn { color: #ea0038; font-size: 22px; cursor: pointer; display: none; }
 
+        /* واجهات الدخول واختيار الغرف */
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 80%; }
+        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 85%; max-width: 400px; }
+        .hidden { display: none !important; }
+        
+        /* تصميم أزرار الغرف */
+        .room-btn { background: #2a3942; color: white; border: 1px solid #3b4a54; padding: 15px; margin: 10px 0; border-radius: 12px; cursor: pointer; width: 100%; text-align: right; font-size: 18px; display: flex; justify-content: space-between; align-items: center; }
+        .room-btn:hover { background: #3b4a54; }
+        .room-btn i { color: #00a884; }
+
         audio { max-width: 100%; margin-top: 5px; }
     </style>
 </head>
@@ -49,13 +57,20 @@
         <h3>أهلاً بك يا سيد</h3>
         <input type="text" id="username-input" style="width:90%; padding:12px; border-radius:10px; background:#2a3942; color:white; border:1px solid #3b4a54;" placeholder="ادخل اسمك">
         <br><br>
-        <button onclick="login()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold;">دخول</button>
+        <button onclick="login()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold;">متابعة</button>
+    </div>
+
+    <div id="rooms-card" class="modal-card hidden">
+        <h3>اختر غرفة الدردشة</h3>
+        <button class="room-btn" onclick="joinRoom('1111')">غرفة 1111 <i class="fas fa-door-open"></i></button>
+        <button class="room-btn" onclick="joinRoom('2222')">غرفة 2222 <i class="fas fa-door-open"></i></button>
+        <button class="room-btn" onclick="joinRoom('العامة')">الغرفة العامة <i class="fas fa-users"></i></button>
     </div>
 </div>
 
 <header>
     <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 12px;">خروج</button>
-    <div>غرفة 1111</div>
+    <div id="current-room-name">انتظر...</div>
     <div>
         <i id="btn-end" class="fas fa-phone-slash end-btn" onclick="endCall()" style="margin-left:15px;"></i>
         <i id="btn-start" class="fas fa-phone-alt call-btn" onclick="startCall()" style="margin-left:15px;"></i>
@@ -82,16 +97,31 @@
     let msgRef, callRef, pc, localStream, mediaRec, chunks = [];
     const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-    if(myName) { document.getElementById('overlay').style.display = 'none'; startApp(); }
+    // فحص الحالة عند التحميل
+    if(myName) { 
+        document.getElementById('login-card').classList.add('hidden');
+        document.getElementById('rooms-card').classList.remove('hidden');
+    }
 
     function login() {
         const val = document.getElementById('username-input').value.trim();
-        if(val) { localStorage.setItem("chat_user", val); location.reload(); }
+        if(val) { 
+            myName = val;
+            localStorage.setItem("chat_user", val); 
+            document.getElementById('login-card').classList.add('hidden');
+            document.getElementById('rooms-card').classList.remove('hidden');
+        }
     }
 
-    function startApp() {
-        msgRef = firebase.database().ref("messages/room1111");
-        callRef = firebase.database().ref("calls/room1111");
+    function joinRoom(roomID) {
+        document.getElementById('overlay').classList.add('hidden');
+        document.getElementById('current-room-name').innerText = "غرفة " + roomID;
+        startApp(roomID);
+    }
+
+    function startApp(roomID) {
+        msgRef = firebase.database().ref("messages/" + roomID);
+        callRef = firebase.database().ref("calls/" + roomID);
 
         msgRef.on("child_added", s => {
             const d = s.val();
