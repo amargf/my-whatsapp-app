@@ -45,13 +45,11 @@
 
 <div id="overlay">
     <div id="login-card" class="modal-card">
-        <i class="fas fa-user-shield" style="font-size: 40px; color: #00a884;"></i>
         <h3>مرحباً بك يا سيد</h3>
         <input type="text" id="username-input" class="room-input" placeholder="ادخل اسمك">
         <button onclick="login()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">متابعة</button>
     </div>
     <div id="rooms-card" class="modal-card hidden">
-        <i class="fas fa-lock" style="font-size: 40px; color: #00a884;"></i>
         <h3>دخول الغرفة</h3>
         <input type="text" id="room-id-input" class="room-input" placeholder="اسم الغرفة">
         <input type="password" id="room-pass-input" class="room-input" placeholder="كلمة السر">
@@ -92,8 +90,8 @@
 
     window.onload = () => {
         setTimeout(() => {
-            const splash = document.getElementById('splash-screen');
-            if(splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 800); }
+            const s = document.getElementById('splash-screen');
+            if(s) { s.style.opacity = '0'; setTimeout(() => s.remove(), 800); }
         }, 1500);
     };
 
@@ -103,30 +101,24 @@
     }
 
     function login() {
-        const val = document.getElementById('username-input').value.trim();
-        if(val) { 
-            myName = val; 
-            localStorage.setItem("chat_user", val); 
-            document.getElementById('login-card').classList.add('hidden'); 
-            document.getElementById('rooms-card').classList.remove('hidden'); 
-        }
+        const v = document.getElementById('username-input').value.trim();
+        if(v) { myName = v; localStorage.setItem("chat_user", v); document.getElementById('login-card').classList.add('hidden'); document.getElementById('rooms-card').classList.remove('hidden'); }
     }
 
     function handleJoin() {
-        const roomID = document.getElementById('room-id-input').value.trim();
-        const pass = document.getElementById('room-pass-input').value.trim();
-        if(roomID && pass) {
-            // استخدام "رقم تعريف" بسيط بدلاً من التشفير المعقد لتجنب تعليق الكروم
-            const securePath = "R_" + roomID + "_" + pass; 
-            document.getElementById('current-room-name').innerText = roomID;
+        const r = document.getElementById('room-id-input').value.trim();
+        const p = document.getElementById('room-pass-input').value.trim();
+        if(r && p) {
+            // تطبيق اقتراحك يا سيد: دمج اسم الغرفة مع كلمة السر مباشرة
+            const finalPath = r + p; 
+            document.getElementById('current-room-name').innerText = r;
             document.getElementById('overlay').classList.add('hidden');
-            startApp(securePath);
+            startApp(finalPath);
         }
     }
 
     function exitToRooms() {
-        if(msgRef) msgRef.off();
-        if(callRef) callRef.off();
+        if(msgRef) msgRef.off(); if(callRef) callRef.off();
         endCall();
         document.getElementById("chat-box").innerHTML = ""; 
         document.getElementById('overlay').classList.remove('hidden');
@@ -138,12 +130,7 @@
         
         msgRef.on("child_added", s => {
             const d = s.val();
-            let html = "";
-            if(d.type === 'audio') {
-                html = `<audio controls preload="auto"><source src="${d.data}" type="audio/webm"></audio>`;
-            } else {
-                html = d.text;
-            }
+            let html = d.type === 'audio' ? `<audio controls preload="auto"><source src="${d.data}" type="audio/webm"></audio>` : d.text;
             document.getElementById("chat-box").innerHTML += `<div class="message ${d.user===myName?'sent':'received'}"><small>${d.user}</small><br>${html}</div>`;
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
@@ -178,10 +165,8 @@
                     const blob = new Blob(chunks, { type: 'audio/webm' });
                     const reader = new FileReader(); 
                     reader.readAsDataURL(blob);
-                    reader.onloadend = () => {
-                        msgRef.push({ user: myName, type: 'audio', data: reader.result });
-                    };
-                    stream.getTracks().forEach(track => track.stop());
+                    reader.onloadend = () => msgRef.push({ user: myName, type: 'audio', data: reader.result });
+                    stream.getTracks().forEach(t => t.stop());
                 };
                 mediaRec.start(); btn.classList.add("recording"); icon.className = "fas fa-stop";
             } catch(e) { alert("الميكروفون مطلوب"); }
@@ -199,9 +184,7 @@
         callTimer = setTimeout(() => { callRef.push({type:"offer", from:myName, sdp:o}); callTimer = "SENT"; }, 1200); 
     }
 
-    function answerIncomingCall() {
-        if(pendingOffer) { acceptCall(pendingOffer); document.getElementById('call-ui').classList.add('hidden'); pendingOffer = null; }
-    }
+    function answerIncomingCall() { if(pendingOffer) { acceptCall(pendingOffer); document.getElementById('call-ui').classList.add('hidden'); pendingOffer = null; } }
 
     async function acceptCall(o) {
         pc = new RTCPeerConnection(iceServers);
@@ -224,7 +207,7 @@
 
     function stopAllMedia() { 
         if(pc) { pc.close(); pc = null; } 
-        if(localStream) { localStream.getTracks().forEach(track => { track.stop(); }); localStream = null; } 
+        if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; } 
         document.getElementById("remoteAudio").srcObject = null;
         updateUI(false); 
     }
