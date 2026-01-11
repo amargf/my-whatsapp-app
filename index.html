@@ -88,6 +88,7 @@
 
     let myName = localStorage.getItem("chat_user");
     let msgRef, callRef, pc, localStream, mediaRec, chunks = [];
+    let callTimer = null; // مؤقت لمنع إرسال المكالمة فوراً
     const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
     if(myName) { 
@@ -134,7 +135,6 @@
             if(d.type === "answer" && d.to === myName && pc) { await pc.setRemoteDescription(new RTCSessionDescription(d.sdp)); }
             if(d.type === "candidate" && d.from !== myName && pc) { pc.addIceCandidate(new RTCIceCandidate(d.cand)).catch(e=>{}); }
         });
-        // التعديل الهام: عند حذف بيانات المكالمة من قبل الطرف الآخر، يتم إيقاف الميديا فوراً عندك
         callRef.on("child_removed", () => stopAllMedia());
     }
 
@@ -159,15 +159,22 @@
     }
 
     async function startCall() {
+        updateUI(true); // إظهار زر الإغلاق فوراً عندك
+        
         pc = new RTCPeerConnection(iceServers);
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
         pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
-        pc.onicecandidate = e => { if(e.candidate) callRef.push({type:"candidate", from:myName, cand:e.candidate.toJSON()}); };
+        pc.onicecandidate = e => { if(e.candidate && callTimer === "SENT") callRef.push({type:"candidate", from:myName, cand:e.candidate.toJSON()}); };
+
         const o = await pc.createOffer();
         await pc.setLocalDescription(o);
-        callRef.push({type:"offer", from:myName, sdp:o});
-        updateUI(true);
+
+        // الانتظار ثانية واحدة قبل الإرسال الفعلي للسيرفر
+        callTimer = setTimeout(() => {
+            callRef.push({type:"offer", from:myName, sdp:o});
+            callTimer = "SENT"; // علامة أن المكالمة أُرسلت فعلياً
+        }, 1200); 
     }
 
     async function acceptCall(o) {
@@ -182,7 +189,16 @@
         updateUI(true);
     }
 
-    function endCall() { if(callRef) callRef.remove(); stopAllMedia(); }
+    function endCall() { 
+        // إذا تم الإلغاء قبل مرور الوقت المحدد، نقوم بمسح المؤقت
+        if (callTimer && callTimer !== "SENT") {
+            clearTimeout(callTimer);
+            callTimer = null;
+        } else if (callRef) {
+            callRef.remove(); 
+        }
+        stopAllMedia(); 
+    }
 
     function stopAllMedia() { 
         if(pc) { pc.close(); pc = null; } 
