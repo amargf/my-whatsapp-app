@@ -3,65 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب العرب - النسخة الكاملة والمستقرة</title>
+    <title>واتساب العرب - النسخة النهائية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #0b141a; color: white; font-family: 'Segoe UI', sans-serif; }
         body { display: flex; flex-direction: column; }
-        
         header { background-color: #202c33; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; }
-        
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: rgba(11,20,26,0.9); }
-        
-        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; word-wrap: break-word; }
+        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; }
         .sent { align-self: flex-end; background-color: #005c4b; }
         .received { align-self: flex-start; background-color: #202c33; }
-        .msg-time { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; display: block; text-align: left; }
-
-        /* منطقة الكتابة - مرتفعة عن أزرار الأندرويد */
-        footer { 
-            background: #202c33; 
-            padding: 10px 10px 35px 10px; 
-            display: flex; 
-            gap: 8px; 
-            align-items: center; 
-            flex-shrink: 0; 
-            border-top: 1px solid #3b4a54;
-        }
-        
-        #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
+        footer { background: #202c33; padding: 10px 10px 40px 10px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; border-top: 1px solid #3b4a54; }
+        #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; }
         .icon-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .record-active { background: #ea0038 !important; animation: pulse 1s infinite; }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-        .call-btn { color: #00a884; font-size: 22px; cursor: pointer; margin-right: 15px; }
-        .end-call-btn { color: #ea0038; font-size: 22px; cursor: pointer; display: none; margin-right: 15px; }
-
+        .record-active { background: #ea0038 !important; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .call-btn { color: #00a884; font-size: 22px; cursor: pointer; }
+        .end-call-btn { color: #ea0038; font-size: 22px; cursor: pointer; display: none; }
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 300px; }
-        .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; }
+        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; width: 300px; }
         .hidden { display: none !important; }
-        audio { max-width: 100%; }
     </style>
 </head>
 <body>
 
 <div id="overlay">
     <div id="step-name" class="modal-card">
-        <i class="fas fa-user-circle" style="font-size: 50px; color: #00a884;"></i>
-        <h2>مرحباً بك يا سيد</h2>
-        <input type="text" id="username-input" class="modern-input" placeholder="اسمك">
-        <button onclick="saveUsername()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold;">دخول</button>
+        <h2>أهلاً بك يا سيد</h2>
+        <input type="text" id="username-input" style="width:90%; padding:10px; margin:10px; border-radius:10px;" placeholder="اسمك">
+        <button onclick="saveUsername()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%;">دخول</button>
     </div>
 </div>
 
 <header>
-    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 12px;"><i class="fas fa-sign-out-alt"></i> خروج</button>
+    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 12px;">خروج</button>
     <div id="room-display">1111</div>
     <div>
-        <i id="endCallBtn" class="fas fa-phone-slash end-call-btn" onclick="endCall()"></i>
-        <i id="startCallBtn" class="fas fa-phone-alt call-btn" onclick="startCall()"></i>
+        <i id="endCallBtn" class="fas fa-phone-slash end-call-btn" onclick="endCall()" style="margin-right:15px;"></i>
+        <i id="startCallBtn" class="fas fa-phone-alt call-btn" onclick="startCall()" style="margin-right:15px;"></i>
     </div>
 </header>
 
@@ -70,7 +49,6 @@
 
 <footer>
     <button id="recordBtn" class="icon-btn" onclick="handleRecord()"><i class="fas fa-microphone" id="micIcon"></i></button>
-    
     <input type="text" id="msgInput" placeholder="اكتب رسالة...">
     <button class="icon-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
 </footer>
@@ -98,22 +76,18 @@
     }
 
     function setupChat(name, path) {
-        document.getElementById("room-display").innerText = name;
         messagesRef = firebase.database().ref("messages/" + path);
         messagesRef.on("child_added", s => {
             const d = s.val();
-            const isMe = d.user === currentUsername;
-            let msgContent = d.type === 'audio' ? `<audio controls src="${d.audio}"></audio>` : d.text;
-            document.getElementById("chat-box").innerHTML += `<div class="message ${isMe?'sent':'received'}"><small>${d.user}</small><br>${msgContent}<span class="msg-time">${d.time||''}</span></div>`;
+            let content = d.type === 'audio' ? `<audio controls src="${d.audio}"></audio>` : d.text;
+            document.getElementById("chat-box").innerHTML += `<div class="message ${d.user===currentUsername?'sent':'received'}"><small>${d.user}</small><br>${content}</div>`;
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
     }
 
-    // --- وظيفة التسجيل المحسنة ---
     async function handleRecord() {
         const btn = document.getElementById("recordBtn");
         const icon = document.getElementById("micIcon");
-
         if (!mediaRecorder || mediaRecorder.state === "inactive") {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
@@ -123,27 +97,16 @@
                 const blob = new Blob(chunks, { type: 'audio/webm' });
                 const reader = new FileReader();
                 reader.readAsDataURL(blob);
-                reader.onloadend = () => {
-                    const now = new Date();
-                    messagesRef.push({ 
-                        user: currentUsername, 
-                        type: 'audio', 
-                        audio: reader.result, 
-                        time: now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0') 
-                    });
-                };
+                reader.onloadend = () => { messagesRef.push({ user: currentUsername, type: 'audio', audio: reader.result }); };
             };
             mediaRecorder.start();
-            btn.classList.add("record-active");
-            icon.className = "fas fa-stop";
+            btn.classList.add("record-active"); icon.className = "fas fa-stop";
         } else {
             mediaRecorder.stop();
-            btn.classList.remove("record-active");
-            icon.className = "fas fa-microphone";
+            btn.classList.remove("record-active"); icon.className = "fas fa-microphone";
         }
     }
 
-    // --- وظائف الاتصال الأصلية (دون حذف سطر واحد) ---
     function setupCall(path) {
         callRef = firebase.database().ref("calls/" + path);
         callRef.on("child_added", async s => {
@@ -152,50 +115,38 @@
             if(d.type === "answer" && d.to === currentUsername && pc) { await pc.setRemoteDescription(new RTCSessionDescription(d.sdp)); }
             if(d.type === "candidate" && d.from !== currentUsername && pc) { pc.addIceCandidate(new RTCIceCandidate(d.candidate)).catch(e=>{}); }
         });
-        callRef.on("child_removed", () => { stopMedia(); });
+        callRef.on("child_removed", () => stopMedia());
     }
 
     async function startCall() {
-        try {
-            pc = new RTCPeerConnection(servers);
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-            pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
-            pc.onicecandidate = e => { if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()}); };
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            callRef.push({type: "offer", from: currentUsername, sdp: offer});
-            toggleUI(true);
-        } catch (e) { alert("تأكد من الميكروفون"); }
+        pc = new RTCPeerConnection(servers);
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+        pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
+        pc.onicecandidate = e => { if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()}); };
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        callRef.push({type: "offer", from: currentUsername, sdp: offer});
+        toggleUI(true);
     }
 
     async function answerCall(offer) {
-        try {
-            pc = new RTCPeerConnection(servers);
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-            pc.ontrack = e => { const a = document.getElementById("remoteAudio"); a.srcObject = e.streams[0]; a.play(); };
-            pc.onicecandidate = e => { if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()}); };
-            await pc.setRemoteDescription(new RTCSessionDescription(offer.sdp));
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            callRef.push({type: "answer", from: currentUsername, to: offer.from, sdp: answer});
-            toggleUI(true);
-        } catch (e) { alert("خطأ في الميكروفون"); }
+        pc = new RTCPeerConnection(servers);
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+        pc.ontrack = e => { const a = document.getElementById("remoteAudio"); a.srcObject = e.streams[0]; a.play(); };
+        pc.onicecandidate = e => { if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()}); };
+        await pc.setRemoteDescription(new RTCSessionDescription(offer.sdp));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        callRef.push({type: "answer", from: currentUsername, to: offer.from, sdp: answer});
+        toggleUI(true);
     }
 
     function endCall() { if(callRef) callRef.remove(); stopMedia(); }
     function stopMedia() { if(pc) { pc.close(); pc = null; } if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; } toggleUI(false); }
     function toggleUI(calling) { document.getElementById("startCallBtn").style.display = calling ? "none" : "inline-block"; document.getElementById("endCallBtn").style.display = calling ? "inline-block" : "none"; }
-    
-    function sendMessage() {
-        const i = document.getElementById("msgInput");
-        if(i.value && messagesRef) {
-            const now = new Date();
-            messagesRef.push({user: currentUsername, text: i.value, type: 'text', time: now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0')});
-            i.value = "";
-        }
-    }
+    function sendMessage() { const i = document.getElementById("msgInput"); if(i.value) { messagesRef.push({user: currentUsername, text: i.value, type: 'text'}); i.value = ""; } }
 </script>
 </body>
 </html>
