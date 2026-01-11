@@ -24,8 +24,8 @@
         .btn-green { background-color: #00a884; color: white; }
         .hidden { display: none !important; }
         .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; }
-        /* زر الاتصال */
         .call-btn { color: #00a884; font-size: 22px; cursor: pointer; margin-right: 15px; }
+        .system-msg { align-self: center; background: rgba(32, 44, 51, 0.8); font-size: 12px; padding: 5px 15px; border-radius: 8px; color: #ffd700; margin: 10px 0; border: 1px dashed #ffd700; }
     </style>
 </head>
 <body>
@@ -81,7 +81,6 @@
     let pc = null;
     let localStream = null;
 
-    // خوادم STUN من جوجل
     const servers = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
 
     if(currentUsername) {
@@ -121,63 +120,87 @@
         messagesRef.on("child_added", (snapshot) => {
             const data = snapshot.val();
             const isMe = data.user === currentUsername;
-            const content = `<div class="message ${isMe ? 'sent' : 'received'}"><small style="color:${isMe ? '#8696a0' : '#ffd700'}">${data.user}</small><br>${data.type==='image' ? `<img src="${data.url}" class="msg-img">` : data.text}<span class="msg-time">${data.time || ''}</span></div>`;
+            let content = "";
+            
+            if(data.type === 'system') {
+                content = `<div class="system-msg">${data.text}</div>`;
+            } else {
+                content = `<div class="message ${isMe ? 'sent' : 'received'}"><small style="color:${isMe ? '#8696a0' : '#ffd700'}">${data.user}</small><br>${data.type==='image' ? `<img src="${data.url}" class="msg-img">` : data.text}<span class="msg-time">${data.time || ''}</span></div>`;
+            }
+            
             document.getElementById("chat-box").innerHTML += content;
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
     }
 
-    // --- منطق الاتصال الصوتي WebRTC ---
     async function setupCallSync(dbPath) {
         callRef = firebase.database().ref("calls/" + dbPath);
         callRef.on("child_added", async (snapshot) => {
             const data = snapshot.val();
-            if (data.to === currentUsername && data.type === "offer") {
-                if (confirm("مكالمة واردة من " + data.from + ". هل تقبل؟")) {
+            // استقبال العرض (Offer)
+            if (data.to === "everyone" && data.from !== currentUsername && data.type === "offer") {
+                if (confirm("مكالمة صوتية واردة من: " + data.from)) {
                     await answerCall(data);
                 }
+            }
+            // استقبال الإجابة (Answer)
+            if (data.type === "answer" && data.to === currentUsername && pc) {
+                await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: data.sdp }));
+            }
+            // استقبال الـ Candidates
+            if (data.type === "candidate" && data.from !== currentUsername && pc) {
+                pc.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(e => console.log(e));
             }
         });
     }
 
     async function startCall() {
-        pc = new RTCPeerConnection(servers);
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-        
-        pc.onicecandidate = (e) => {
-            if (e.candidate) callRef.push({ type: 'candidate', from: currentUsername, candidate: e.candidate.toJSON() });
-        };
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            pc = new RTCPeerConnection(servers);
+            
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            
+            pc.onicecandidate = (e) => {
+                if (e.candidate) callRef.push({ type: 'candidate', from: currentUsername, candidate: e.candidate.toJSON() });
+            };
 
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        callRef.push({ type: 'offer', from: currentUsername, to: 'everyone', sdp: offer.sdp });
-        alert("جاري الاتصال بجميع من في الغرفة...");
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            
+            // إرسال الإشارة عبر Firebase
+            callRef.push({ type: 'offer', from: currentUsername, to: 'everyone', sdp: offer.sdp });
+            
+            // إرسال تنبيه نصي للدردشة ليعرف الصديق أن هناك اتصال
+            messagesRef.push({ type: 'system', text: "📞 يقوم " + currentUsername + " ببدء مكالمة صوتية الآن..." });
+            
+            alert("بدأ الاتصال.. انتظر موافقة الطرف الآخر.");
+        } catch (e) {
+            alert("خطأ: يرجى التأكد من السماح للميكروفون أو استخدام HTTPS");
+        }
     }
 
     async function answerCall(offerData) {
-        pc = new RTCPeerConnection(servers);
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            pc = new RTCPeerConnection(servers);
+            
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            
+            pc.ontrack = (e) => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
+            pc.onicecandidate = (e) => {
+                if (e.candidate) callRef.push({ type: 'candidate', from: currentUsername, candidate: e.candidate.toJSON() });
+            };
 
-        pc.ontrack = (e) => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
-        pc.onicecandidate = (e) => {
-            if (e.candidate) callRef.push({ type: 'candidate', from: currentUsername, candidate: e.candidate.toJSON() });
-        };
-
-        await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offerData.sdp }));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        callRef.push({ type: 'answer', from: currentUsername, to: offerData.from, sdp: answer.sdp });
-
-        callRef.on("child_added", (snapshot) => {
-            const data = snapshot.val();
-            if (data.type === "answer" && data.to === currentUsername) {
-                pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: data.sdp }));
-            } else if (data.type === "candidate" && data.from !== currentUsername) {
-                pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-            }
-        });
+            await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offerData.sdp }));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            
+            callRef.push({ type: 'answer', from: currentUsername, to: offerData.from, sdp: answer.sdp });
+            messagesRef.push({ type: 'system', text: "✅ انضم " + currentUsername + " إلى المكالمة." });
+        } catch (e) {
+            alert("فشل الانضمام للمكالمة. تأكد من إعدادات الميكروفون.");
+        }
     }
 
     function sendMessage() {
