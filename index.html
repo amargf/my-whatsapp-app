@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب العرب - النسخة الملكية</title>
+    <title>واتساب العرب - النسخة الاحترافية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #0b141a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; }
         
-        /* واجهة ترحيبية (Splash Screen) */
+        /* واجهة ترحيبية تظهر لمرة واحدة */
         #splash-screen {
             position: fixed; inset: 0; background: #0b141a; display: flex; flex-direction: column;
             align-items: center; justify-content: center; z-index: 2000; transition: opacity 0.8s ease;
@@ -42,8 +42,7 @@
 <div id="splash-screen">
     <div class="splash-logo"><i class="fab fa-whatsapp"></i></div>
     <h2 style="color: #00a884;">واتساب العرب</h2>
-    <p>أهلاً بك يا سيد في عالمك الخاص</p>
-    <div style="margin-top: 20px; font-size: 12px; color: #8696a0;">جاري التحميل...</div>
+    <p>أهلاً بك يا سيد</p>
 </div>
 
 <div id="overlay">
@@ -64,7 +63,7 @@
 </div>
 
 <header>
-    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 12px;">خروج</button>
+    <button onclick="exitToRooms()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 12px;">خروج</button>
     <div id="current-room-name" style="font-weight: bold;"></div>
     <div>
         <i id="btn-end" class="fas fa-phone-slash end-btn" onclick="endCall()" style="margin-left:15px;"></i>
@@ -90,12 +89,13 @@
 
     const REAL_PASSWORD = "123"; 
 
-    // إخفاء الواجهة الترحيبية بعد 3 ثوانٍ
     window.onload = () => {
         setTimeout(() => {
             const splash = document.getElementById('splash-screen');
-            splash.style.opacity = '0';
-            setTimeout(() => splash.classList.add('hidden'), 800);
+            if(splash) {
+                splash.style.opacity = '0';
+                setTimeout(() => splash.remove(), 800); // حذفها نهائياً من الصفحة بعد الظهور
+            }
         }, 3000);
     };
 
@@ -125,6 +125,16 @@
             document.getElementById('current-room-name').innerText = roomID;
             startApp(finalPath);
         } else { alert("اكمل البيانات"); }
+    }
+
+    // وظيفة الخروج لواجهة الغرف دون إعادة تحميل الصفحة
+    function exitToRooms() {
+        if(msgRef) msgRef.off(); // إيقاف الاستماع للرسائل القديمة
+        stopAllMedia();
+        document.getElementById("chat-box").innerHTML = ""; // تنظيف المحادثة
+        document.getElementById('overlay').classList.remove('hidden');
+        document.getElementById('rooms-card').classList.remove('hidden');
+        document.getElementById('current-room-name').innerText = "";
     }
 
     function startApp(path) {
