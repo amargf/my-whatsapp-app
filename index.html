@@ -24,12 +24,13 @@
         .room-input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 10px; background: #2a3942; color: white; border: 1px solid #3b4a54; font-size: 16px; text-align: center; }
         .hidden { display: none !important; }
         
-        /* واجهة الاتصال الموحدة */
         #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-bottom: 3px solid #00a884; transition: all 0.3s ease; }
         .call-actions { display: flex; gap: 10px; }
         .accept-btn { background: #00a884; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .decline-btn { background: #ea0038; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        audio { display: none; }
+        
+        /* تحسين مظهر مشغل الصوت */
+        audio { height: 35px; width: 200px; filter: invert(100%); margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -129,7 +130,6 @@
         endCall();
         document.getElementById("chat-box").innerHTML = ""; 
         document.getElementById('overlay').classList.remove('hidden');
-        document.getElementById('rooms-card').classList.remove('hidden');
     }
 
     function startApp(path) {
@@ -138,30 +138,28 @@
         
         msgRef.on("child_added", s => {
             const d = s.val();
-            let html = d.type === 'audio' ? `<audio controls src="${d.data}"></audio>` : d.text;
+            let html = "";
+            if(d.type === 'audio') {
+                // إضافة type محدد للمتصفح لضمان التشغيل في كروم
+                html = `<audio controls preload="metadata"><source src="${d.data}" type="audio/webm"></audio>`;
+            } else {
+                html = d.text;
+            }
             document.getElementById("chat-box").innerHTML += `<div class="message ${d.user===myName?'sent':'received'}"><small>${d.user}</small><br>${html}</div>`;
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
 
         callRef.on("child_added", async s => {
             const d = s.val();
-            // استقبال العرض (Offer)
             if(d.type === "offer" && d.from !== myName) {
                 pendingOffer = d;
                 document.getElementById('caller-name').innerText = d.from;
                 document.getElementById('call-ui').classList.remove('hidden');
             }
-            // استقبال الجواب (Answer)
-            if(d.type === "answer" && d.to === myName && pc) { 
-                await pc.setRemoteDescription(new RTCSessionDescription(d.sdp)); 
-            }
-            // استقبال الـ Candidates
-            if(d.type === "candidate" && d.from !== myName && pc) { 
-                pc.addIceCandidate(new RTCIceCandidate(d.cand)).catch(e=>{}); 
-            }
+            if(d.type === "answer" && d.to === myName && pc) { await pc.setRemoteDescription(new RTCSessionDescription(d.sdp)); }
+            if(d.type === "candidate" && d.from !== myName && pc) { pc.addIceCandidate(new RTCIceCandidate(d.cand)).catch(e=>{}); }
         });
 
-        // عند حذف بيانات المكالمة من السيرفر (سواء بالإلغاء أو الرفض)
         callRef.on("child_removed", () => {
             document.getElementById('call-ui').classList.add('hidden');
             stopAllMedia();
@@ -174,13 +172,18 @@
         if (!mediaRec || mediaRec.state === "inactive") {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRec = new MediaRecorder(stream);
+                // تحسين: تحديد صيغة التسجيل لكروم
+                const options = { mimeType: 'audio/webm' };
+                mediaRec = new MediaRecorder(stream, options);
                 chunks = [];
-                mediaRec.ondataavailable = e => chunks.push(e.data);
+                mediaRec.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
                 mediaRec.onstop = () => {
                     const blob = new Blob(chunks, { type: 'audio/webm' });
-                    const reader = new FileReader(); reader.readAsDataURL(blob);
-                    reader.onloadend = () => msgRef.push({ user: myName, type: 'audio', data: reader.result });
+                    const reader = new FileReader(); 
+                    reader.readAsDataURL(blob);
+                    reader.onloadend = () => {
+                        msgRef.push({ user: myName, type: 'audio', data: reader.result });
+                    };
                     stream.getTracks().forEach(track => track.stop());
                 };
                 mediaRec.start(); btn.classList.add("recording"); icon.className = "fas fa-stop";
@@ -195,23 +198,13 @@
         localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
         pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
         pc.onicecandidate = e => { if(e.candidate && callTimer === "SENT") callRef.push({type:"candidate", from:myName, cand:e.candidate.toJSON()}); };
-
         const o = await pc.createOffer();
         await pc.setLocalDescription(o);
-
-        // نظام التأخير للخصوصية
-        callTimer = setTimeout(() => {
-            callRef.push({type:"offer", from:myName, sdp:o});
-            callTimer = "SENT";
-        }, 1200); 
+        callTimer = setTimeout(() => { callRef.push({type:"offer", from:myName, sdp:o}); callTimer = "SENT"; }, 1200); 
     }
 
     function answerIncomingCall() {
-        if(pendingOffer) { 
-            acceptCall(pendingOffer); 
-            document.getElementById('call-ui').classList.add('hidden'); 
-            pendingOffer = null;
-        }
+        if(pendingOffer) { acceptCall(pendingOffer); document.getElementById('call-ui').classList.add('hidden'); pendingOffer = null; }
     }
 
     async function acceptCall(o) {
@@ -220,22 +213,15 @@
         localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
         pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
         pc.onicecandidate = e => { if(e.candidate) callRef.push({type:"candidate", from:myName, cand:e.candidate.toJSON()}); };
-        
         await pc.setRemoteDescription(new RTCSessionDescription(o.sdp));
-        const a = await pc.createAnswer(); 
-        await pc.setLocalDescription(a);
-        
+        const a = await pc.createAnswer(); await pc.setLocalDescription(a);
         callRef.push({type:"answer", from:myName, to:o.from, sdp:a});
         updateUI(true);
     }
 
     function endCall() { 
-        if (callTimer && callTimer !== "SENT") { 
-            clearTimeout(callTimer); 
-            callTimer = null; 
-        } else if (callRef) { 
-            callRef.remove(); 
-        }
+        if (callTimer && callTimer !== "SENT") { clearTimeout(callTimer); callTimer = null; } 
+        else if (callRef) { callRef.remove(); }
         document.getElementById('call-ui').classList.add('hidden');
         stopAllMedia(); 
     }
