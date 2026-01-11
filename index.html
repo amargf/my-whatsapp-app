@@ -24,11 +24,12 @@
         .room-input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 10px; background: #2a3942; color: white; border: 1px solid #3b4a54; font-size: 16px; text-align: center; }
         .hidden { display: none !important; }
         
-        /* نافذة الاتصال الجديدة */
-        #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-bottom: 3px solid #00a884; }
+        /* واجهة الاتصال الموحدة */
+        #call-ui { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #111b21; border: 1px solid #00a884; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 15px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-bottom: 3px solid #00a884; transition: all 0.3s ease; }
         .call-actions { display: flex; gap: 10px; }
-        .accept-btn { background: #00a884; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
-        .decline-btn { background: #ea0038; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
+        .accept-btn { background: #00a884; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .decline-btn { background: #ea0038; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        audio { display: none; }
     </style>
 </head>
 <body>
@@ -40,10 +41,10 @@
 </div>
 
 <div id="call-ui" class="hidden">
-    <div style="color: #00a884; font-weight: bold;"><i class="fas fa-phone-alt"></i> مكالمة من: <span id="caller-name">...</span></div>
+    <div style="color: #00a884; font-weight: bold;"><i class="fas fa-phone-alt-slash fa-pulse"></i> مكالمة من: <span id="caller-name">...</span></div>
     <div class="call-actions">
-        <button class="accept-btn" onclick="answerIncomingCall()"><i class="fas fa-check"></i></button>
-        <button class="decline-btn" onclick="endCall()"><i class="fas fa-times"></i></button>
+        <button class="accept-btn" onclick="answerIncomingCall()"><i class="fas fa-phone"></i></button>
+        <button class="decline-btn" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
     </div>
 </div>
 
@@ -67,8 +68,8 @@
     <button onclick="exitToRooms()" style="background:#ea0038; border:none; color:white; border-radius:10px; padding:5px 12px;">خروج</button>
     <div id="current-room-name" style="font-weight: bold;"></div>
     <div>
-        <i id="btn-end" class="fas fa-phone-slash" style="color:#ea0038; display:none; cursor:pointer;" onclick="endCall()"></i>
-        <i id="btn-start" class="fas fa-phone-alt" style="color:#00a884; cursor:pointer;" onclick="startCall()"></i>
+        <i id="btn-end" class="fas fa-phone-slash" style="color:#ea0038; display:none; cursor:pointer; font-size: 22px;" onclick="endCall()"></i>
+        <i id="btn-start" class="fas fa-phone-alt" style="color:#00a884; cursor:pointer; font-size: 22px;" onclick="startCall()"></i>
     </div>
 </header>
 
@@ -99,7 +100,7 @@
     let myName = localStorage.getItem("chat_user");
     let msgRef, callRef, pc, localStream, mediaRec, chunks = [];
     let callTimer = null;
-    let pendingOffer = null; // لتخزين بيانات المكالمة الواردة
+    let pendingOffer = null; 
     const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
     if(myName) { 
@@ -144,17 +145,25 @@
 
         callRef.on("child_added", async s => {
             const d = s.val();
+            // استقبال العرض (Offer)
             if(d.type === "offer" && d.from !== myName) {
                 pendingOffer = d;
                 document.getElementById('caller-name').innerText = d.from;
-                document.getElementById('call-ui').classList.remove('hidden'); // إظهار النافذة البرمجية
+                document.getElementById('call-ui').classList.remove('hidden');
             }
-            if(d.type === "answer" && d.to === myName && pc) { await pc.setRemoteDescription(new RTCSessionDescription(d.sdp)); }
-            if(d.type === "candidate" && d.from !== myName && pc) { pc.addIceCandidate(new RTCIceCandidate(d.cand)).catch(e=>{}); }
+            // استقبال الجواب (Answer)
+            if(d.type === "answer" && d.to === myName && pc) { 
+                await pc.setRemoteDescription(new RTCSessionDescription(d.sdp)); 
+            }
+            // استقبال الـ Candidates
+            if(d.type === "candidate" && d.from !== myName && pc) { 
+                pc.addIceCandidate(new RTCIceCandidate(d.cand)).catch(e=>{}); 
+            }
         });
 
+        // عند حذف بيانات المكالمة من السيرفر (سواء بالإلغاء أو الرفض)
         callRef.on("child_removed", () => {
-            document.getElementById('call-ui').classList.add('hidden'); // إخفاء النافذة فوراً عند الطرف الآخر
+            document.getElementById('call-ui').classList.add('hidden');
             stopAllMedia();
         });
     }
@@ -190,6 +199,7 @@
         const o = await pc.createOffer();
         await pc.setLocalDescription(o);
 
+        // نظام التأخير للخصوصية
         callTimer = setTimeout(() => {
             callRef.push({type:"offer", from:myName, sdp:o});
             callTimer = "SENT";
@@ -197,7 +207,11 @@
     }
 
     function answerIncomingCall() {
-        if(pendingOffer) { acceptCall(pendingOffer); document.getElementById('call-ui').classList.add('hidden'); }
+        if(pendingOffer) { 
+            acceptCall(pendingOffer); 
+            document.getElementById('call-ui').classList.add('hidden'); 
+            pendingOffer = null;
+        }
     }
 
     async function acceptCall(o) {
@@ -206,22 +220,29 @@
         localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
         pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
         pc.onicecandidate = e => { if(e.candidate) callRef.push({type:"candidate", from:myName, cand:e.candidate.toJSON()}); };
+        
         await pc.setRemoteDescription(new RTCSessionDescription(o.sdp));
-        const a = await pc.createAnswer(); await pc.setLocalDescription(a);
+        const a = await pc.createAnswer(); 
+        await pc.setLocalDescription(a);
+        
         callRef.push({type:"answer", from:myName, to:o.from, sdp:a});
         updateUI(true);
     }
 
     function endCall() { 
-        if (callTimer && callTimer !== "SENT") { clearTimeout(callTimer); callTimer = null; } 
-        else if (callRef) { callRef.remove(); }
+        if (callTimer && callTimer !== "SENT") { 
+            clearTimeout(callTimer); 
+            callTimer = null; 
+        } else if (callRef) { 
+            callRef.remove(); 
+        }
         document.getElementById('call-ui').classList.add('hidden');
         stopAllMedia(); 
     }
 
     function stopAllMedia() { 
         if(pc) { pc.close(); pc = null; } 
-        if(localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; } 
+        if(localStream) { localStream.getTracks().forEach(track => { track.stop(); track.enabled = false; }); localStream = null; } 
         document.getElementById("remoteAudio").srcObject = null;
         updateUI(false); 
     }
