@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب العرب - إنشاء الغرف</title>
+    <title>واتساب العرب - الغرف المحمية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #0b141a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; }
@@ -12,7 +12,6 @@
         .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; word-wrap: break-word; }
         .sent { align-self: flex-end; background-color: #005c4b; }
         .received { align-self: flex-start; background-color: #202c33; }
-
         footer { background: #202c33; padding: 10px 10px 45px 10px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; border-top: 1px solid #3b4a54; }
         #msgInput { flex: 1; padding: 12px 15px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
         .icon-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -20,11 +19,9 @@
         @keyframes pulse { 0% {opacity: 1} 50% {opacity: 0.5} 100% {opacity: 1} }
         .call-btn { color: #00a884; font-size: 22px; cursor: pointer; }
         .end-btn { color: #ea0038; font-size: 22px; cursor: pointer; display: none; }
-
-        /* واجهة اختيار الغرف الجديدة */
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 85%; max-width: 400px; }
-        .room-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; background: #2a3942; color: white; border: 1px solid #3b4a54; font-size: 16px; text-align: center; }
+        .room-input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 10px; background: #2a3942; color: white; border: 1px solid #3b4a54; font-size: 16px; text-align: center; }
         .hidden { display: none !important; }
         audio { max-width: 100%; margin-top: 5px; }
     </style>
@@ -33,18 +30,18 @@
 
 <div id="overlay">
     <div id="login-card" class="modal-card">
-        <i class="fas fa-user-circle" style="font-size: 40px; color: #00a884;"></i>
+        <i class="fas fa-user-shield" style="font-size: 40px; color: #00a884;"></i>
         <h3>مرحباً بك يا سيد</h3>
         <input type="text" id="username-input" class="room-input" placeholder="ادخل اسمك">
         <button onclick="login()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">متابعة</button>
     </div>
 
     <div id="rooms-card" class="modal-card hidden">
-        <i class="fas fa-plus-circle" style="font-size: 40px; color: #00a884;"></i>
-        <h3>إنشاء غرفة جديدة</h3>
-        <p style="font-size: 12px; color: #8696a0;">اكتب اسم الغرفة التي تريد إنشاءها أو الانضمام إليها</p>
-        <input type="text" id="room-id-input" class="room-input" placeholder="مثال: غرفة_الأسود">
-        <button onclick="handleJoin()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">دخول الغرفة</button>
+        <i class="fas fa-lock" style="font-size: 40px; color: #00a884;"></i>
+        <h3>دخول الغرفة</h3>
+        <input type="text" id="room-id-input" class="room-input" placeholder="اسم الغرفة">
+        <input type="password" id="room-pass-input" class="room-input" placeholder="كلمة السر">
+        <button onclick="handleJoin()" style="background:#00a884; color:white; padding:12px; border:none; border-radius:20px; width:100%; font-weight:bold; margin-top:10px;">دخول</button>
     </div>
 </div>
 
@@ -73,6 +70,9 @@
     const config = { databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(config);
 
+    // --- كلمة السر الحقيقية ---
+    const REAL_PASSWORD = "123"; 
+
     let myName = localStorage.getItem("chat_user");
     let msgRef, callRef, pc, localStream, mediaRec, chunks = [];
     const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
@@ -84,9 +84,7 @@
 
     function login() {
         const val = document.getElementById('username-input').value.trim();
-        if(val) { 
-            myName = val;
-            localStorage.setItem("chat_user", val); 
+        if(val) { myName = val; localStorage.setItem("chat_user", val); 
             document.getElementById('login-card').classList.add('hidden');
             document.getElementById('rooms-card').classList.remove('hidden');
         }
@@ -94,18 +92,20 @@
 
     function handleJoin() {
         const roomID = document.getElementById('room-id-input').value.trim();
-        if(roomID) {
+        const pass = document.getElementById('room-pass-input').value.trim();
+        
+        if(roomID && pass) {
             document.getElementById('overlay').classList.add('hidden');
+            // التمويه: إذا أخطأ يدخل لغرفة وهمية بنفس الاسم مسبوقاً بـ Fake_
+            const finalPath = (pass === REAL_PASSWORD) ? roomID : "Fake_" + roomID;
             document.getElementById('current-room-name').innerText = roomID;
-            startApp(roomID);
-        } else {
-            alert("يرجى كتابة اسم الغرفة");
-        }
+            startApp(finalPath);
+        } else { alert("اكمل البيانات"); }
     }
 
-    function startApp(roomID) {
-        msgRef = firebase.database().ref("messages/" + roomID);
-        callRef = firebase.database().ref("calls/" + roomID);
+    function startApp(path) {
+        msgRef = firebase.database().ref("messages/" + path);
+        callRef = firebase.database().ref("calls/" + path);
 
         msgRef.on("child_added", s => {
             const d = s.val();
@@ -141,10 +141,7 @@
                 mediaRec.start();
                 btn.classList.add("recording"); icon.className = "fas fa-stop";
             } catch(e) { alert("الميكروفون مطلوب"); }
-        } else {
-            mediaRec.stop();
-            btn.classList.remove("recording"); icon.className = "fas fa-microphone";
-        }
+        } else { mediaRec.stop(); btn.classList.remove("recording"); icon.className = "fas fa-microphone"; }
     }
 
     async function startCall() {
