@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب العرب - النسخة الاحترافية</title>
+    <title>واتساب العرب - النسخة النهائية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #0b141a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; }
         
-        /* واجهة ترحيبية تظهر لمرة واحدة */
         #splash-screen {
             position: fixed; inset: 0; background: #0b141a; display: flex; flex-direction: column;
             align-items: center; justify-content: center; z-index: 2000; transition: opacity 0.8s ease;
@@ -94,7 +93,7 @@
             const splash = document.getElementById('splash-screen');
             if(splash) {
                 splash.style.opacity = '0';
-                setTimeout(() => splash.remove(), 800); // حذفها نهائياً من الصفحة بعد الظهور
+                setTimeout(() => splash.remove(), 800);
             }
         }, 3000);
     };
@@ -127,11 +126,10 @@
         } else { alert("اكمل البيانات"); }
     }
 
-    // وظيفة الخروج لواجهة الغرف دون إعادة تحميل الصفحة
     function exitToRooms() {
-        if(msgRef) msgRef.off(); // إيقاف الاستماع للرسائل القديمة
-        stopAllMedia();
-        document.getElementById("chat-box").innerHTML = ""; // تنظيف المحادثة
+        if(msgRef) msgRef.off();
+        endCall(); // استدعاء إنهاء المكالمة لضمان قفل الميكروفون
+        document.getElementById("chat-box").innerHTML = ""; 
         document.getElementById('overlay').classList.remove('hidden');
         document.getElementById('rooms-card').classList.remove('hidden');
         document.getElementById('current-room-name').innerText = "";
@@ -169,6 +167,8 @@
                     const reader = new FileReader();
                     reader.readAsDataURL(blob);
                     reader.onloadend = () => msgRef.push({ user: myName, type: 'audio', data: reader.result });
+                    // إيقاف مسار الميكروفون بعد التسجيل فوراً
+                    stream.getTracks().forEach(track => track.stop());
                 };
                 mediaRec.start();
                 btn.classList.add("recording"); icon.className = "fas fa-stop";
@@ -202,11 +202,21 @@
     }
 
     function endCall() { if(callRef) callRef.remove(); stopAllMedia(); }
+
     function stopAllMedia() { 
         if(pc) { pc.close(); pc = null; } 
-        if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; } 
+        if(localStream) { 
+            // إيقاف جميع مسارات الصوت تماماً لتحرير الميكروفون
+            localStream.getTracks().forEach(track => {
+                track.stop();
+                track.enabled = false;
+            }); 
+            localStream = null; 
+        } 
+        document.getElementById("remoteAudio").srcObject = null;
         updateUI(false); 
     }
+
     function updateUI(c) {
         document.getElementById("btn-start").style.display = c ? "none" : "inline-block";
         document.getElementById("btn-end").style.display = c ? "inline-block" : "none";
