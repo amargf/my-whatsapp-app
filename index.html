@@ -3,78 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>واتساب العرب - النسخة الاحترافية</title>
+    <title>واتساب العرب</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #0b141a; display: flex; flex-direction: column; color: white; }
-        
         header { background-color: #202c33; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4a54; flex-shrink: 0; }
-        
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: rgba(11, 20, 26, 0.9); background-blend-mode: overlay; }
-        
-        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; word-wrap: break-word; position: relative; }
+        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; }
         .sent { align-self: flex-end; background-color: #005c4b; }
         .received { align-self: flex-start; background-color: #202c33; }
-        .msg-time { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; text-align: left; display: block; }
-        .system-msg { align-self: center; background: rgba(32, 44, 51, 0.8); font-size: 12px; padding: 5px 15px; border-radius: 8px; color: #ffd700; margin: 10px 0; border: 1px dashed #ffd700; }
-        .msg-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
-
-        footer { background: #202c33; padding: 12px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; position: relative; bottom: 0; width: 100%; box-sizing: border-box; }
-        #msgInput { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #2a3942; color: white; outline: none; font-size: 16px; }
-        .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #8696a0; padding: 0 5px; }
-        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-
-        /* واجهات الدخول */
-        #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #3b4a54; }
-        .custom-btn { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 25px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        .btn-green { background-color: #00a884; color: white; }
+        .msg-time { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; display: block; text-align: left; }
+        footer { background: #202c33; padding: 12px; display: flex; gap: 8px; align-items: center; }
+        #msgInput { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #2a3942; color: white; outline: none; }
+        .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .call-btn { color: #00a884; font-size: 22px; cursor: pointer; }
+        #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 300px; }
+        .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; }
         .hidden { display: none !important; }
-        .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; text-align: center; }
-
-        /* أزرار المكالمة */
-        .call-btn { color: #00a884; font-size: 22px; cursor: pointer; margin-right: 15px; }
-        .end-call-btn { color: #ea0038; font-size: 22px; cursor: pointer; margin-right: 15px; display: none; }
     </style>
 </head>
 <body>
 
 <div id="overlay">
     <div id="step-name" class="modal-card">
-        <i class="fas fa-user-circle" style="font-size: 50px; color: #00a884; margin-bottom: 15px;"></i>
-        <h2>أهلاً بك يا سيد</h2>
-        <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
-        <button class="custom-btn btn-green" onclick="saveUsername()">متابعة</button>
-    </div>
-    <div id="step-choice" class="modal-card hidden">
-        <i class="fas fa-comments" style="font-size: 50px; color: #00a884; margin-bottom: 15px;"></i>
-        <h2>الدخول للدردشة</h2>
-        <button class="custom-btn btn-green" onclick="showPrivateForm()">دخول غرفة خاصة</button>
+        <i class="fas fa-user-circle" style="font-size: 50px; color: #00a884;"></i>
+        <h2>اسمك</h2>
+        <input type="text" id="username-input" class="modern-input">
+        <button onclick="saveUsername()" style="background:#00a884; color:white; padding:10px 20px; border:none; border-radius:20px;">متابعة</button>
     </div>
     <div id="step-private" class="modal-card hidden">
-        <i class="fas fa-lock" style="font-size: 50px; color: #00a884; margin-bottom: 15px;"></i>
-        <h2>بيانات الغرفة</h2>
+        <h2>دخول الغرفة</h2>
         <input type="text" id="room-name-input" class="modern-input" placeholder="اسم الغرفة">
         <input type="password" id="room-pass-input" class="modern-input" placeholder="كلمة السر">
-        <button class="custom-btn btn-green" onclick="joinPrivate()">دخول</button>
+        <button onclick="joinPrivate()" style="background:#00a884; color:white; padding:10px 20px; border:none; border-radius:20px;">دخول</button>
     </div>
 </div>
 
 <header>
-    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px; cursor:pointer;"><i class="fas fa-sign-out-alt"></i> خروج</button>
+    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px;">خروج</button>
     <div id="room-display">الرئيسية</div>
-    <div>
-        <i id="startCallIcon" class="fas fa-phone-alt call-btn" onclick="startCall()" title="بدء اتصال"></i>
-        <i id="endCallIcon" class="fas fa-phone-slash end-call-btn" onclick="endCall()" title="إنهاء المكالمة"></i>
-    </div>
+    <i class="fas fa-phone-alt call-btn" onclick="startCall()"></i>
 </header>
 
 <div id="chat-box"></div>
 <audio id="remoteAudio" autoplay></audio>
 
 <footer>
-    <button class="icon-btn" onclick="sendImageUrl()"><i class="fas fa-image"></i></button>
+    <button class="icon-btn" style="background:none; border:none; color:#8696a0; font-size:20px;" onclick="sendImageUrl()"><i class="fas fa-image"></i></button>
     <input type="text" id="msgInput" placeholder="اكتب رسالة...">
     <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
 </footer>
@@ -83,7 +60,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-    // إعدادات Firebase
     const firebaseConfig = { databaseURL: "https://khadimalarab-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
 
@@ -93,169 +69,96 @@
     let pc = null;
     let localStream = null;
 
-    // خوادم STUN المجانية من جوجل
-    const servers = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
+    const servers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-    if(currentUsername) {
-        document.getElementById('step-name').classList.add('hidden');
-        document.getElementById('step-choice').classList.remove('hidden');
-    }
+    if(currentUsername) { document.getElementById('step-name').classList.add('hidden'); document.getElementById('step-private').classList.remove('hidden'); }
 
     function saveUsername() {
         const val = document.getElementById('username-input').value.trim();
-        if(val) { currentUsername = val; localStorage.setItem("chat_user", val); document.getElementById('step-name').classList.add('hidden'); document.getElementById('step-choice').classList.remove('hidden'); }
-    }
-
-    function showPrivateForm() {
-        document.getElementById('step-choice').classList.add('hidden');
-        document.getElementById('step-private').classList.remove('hidden');
+        if(val) { currentUsername = val; localStorage.setItem("chat_user", val); location.reload(); }
     }
 
     function joinPrivate() {
         let roomName = document.getElementById('room-name-input').value.trim();
         let roomPass = document.getElementById('room-pass-input').value.trim();
-        if(!roomName || !roomPass) return alert("يرجى إدخال البيانات");
-
         const roomRef = firebase.database().ref("room_settings/" + roomName);
-        roomRef.once('value').then((snapshot) => {
-            const data = snapshot.val();
+        roomRef.once('value').then(s => {
             document.getElementById("overlay").classList.add("hidden");
-            const dbPath = (data && data.password !== roomPass) ? "fake_" + roomName + "_" + roomPass : "private_" + roomName;
-            if (!data) roomRef.set({ password: roomPass });
-            setupChat("غرفة: " + roomName, dbPath);
-            setupCallSync(dbPath);
+            const dbPath = "private_" + roomName;
+            if(!s.val()) roomRef.set({password: roomPass});
+            setupChat(roomName, dbPath);
+            setupCall(dbPath);
         });
     }
 
-    function setupChat(displayName, dbPath) {
-        document.getElementById("room-display").innerText = displayName;
-        messagesRef = firebase.database().ref("messages/" + dbPath);
-        messagesRef.on("child_added", (snapshot) => {
-            const data = snapshot.val();
-            const isMe = data.user === currentUsername;
-            let content = "";
-            
-            if(data.type === 'system') {
-                content = `<div class="system-msg">${data.text}</div>`;
-            } else {
-                content = `<div class="message ${isMe ? 'sent' : 'received'}"><small style="color:${isMe ? '#8696a0' : '#ffd700'}">${data.user}</small><br>${data.type==='image' ? `<img src="${data.url}" class="msg-img">` : data.text}<span class="msg-time">${data.time || ''}</span></div>`;
-            }
-            
-            const chatBox = document.getElementById("chat-box");
-            chatBox.innerHTML += content;
-            chatBox.scrollTop = chatBox.scrollHeight;
+    function setupChat(name, path) {
+        document.getElementById("room-display").innerText = name;
+        messagesRef = firebase.database().ref("messages/" + path);
+        messagesRef.on("child_added", s => {
+            const d = s.val();
+            const isMe = d.user === currentUsername;
+            const time = d.time || "";
+            document.getElementById("chat-box").innerHTML += `<div class="message ${isMe?'sent':'received'}"><small>${d.user}</small><br>${d.text}<span class="msg-time">${time}</span></div>`;
+            document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
     }
 
-    // --- منطق الاتصال المطور ---
-    async function setupCallSync(dbPath) {
-        callRef = firebase.database().ref("calls/" + dbPath);
-        
-        callRef.on("child_added", async (snapshot) => {
-            const data = snapshot.val();
-            const now = Date.now();
-            
-            // تجاهل الطلبات القديمة (أكثر من دقيقة)
-            if (data.timestamp && (now - data.timestamp > 60000)) return;
-
-            if (data.to === "everyone" && data.from !== currentUsername && data.type === "offer") {
-                if (confirm("مكالمة واردة من: " + data.from + ". هل تقبل؟")) {
-                    await answerCall(data);
-                }
+    // --- نظام الاتصال البسيط الذي عمل معك سابقاً ---
+    function setupCall(path) {
+        callRef = firebase.database().ref("calls/" + path);
+        callRef.on("child_added", async s => {
+            const d = s.val();
+            if(d.type === "offer" && d.from !== currentUsername) {
+                if(confirm("مكالمة من " + d.from)) answerCall(d);
             }
-            if (data.type === "answer" && data.to === currentUsername && pc) {
-                await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: data.sdp }));
+            if(d.type === "answer" && d.to === currentUsername) {
+                pc.setRemoteDescription(new RTCSessionDescription(d.sdp));
             }
-            if (data.type === "candidate" && data.from !== currentUsername && pc) {
-                pc.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(e => console.error(e));
+            if(d.type === "candidate" && d.from !== currentUsername) {
+                pc.addIceCandidate(new RTCIceCandidate(d.candidate));
             }
-        });
-
-        // تنظيف البيانات إذا تم مسحها من طرف آخر
-        callRef.on("child_removed", () => {
-            if(pc) endCall(false); 
         });
     }
 
     async function startCall() {
-        try {
-            const timestamp = Date.now();
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            pc = new RTCPeerConnection(servers);
-            
-            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-            toggleCallIcons(true);
-
-            pc.onicecandidate = (e) => {
-                if (e.candidate) callRef.push({ type: 'candidate', from: currentUsername, candidate: e.candidate.toJSON(), timestamp: timestamp });
-            };
-
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            
-            callRef.push({ type: 'offer', from: currentUsername, to: 'everyone', sdp: offer.sdp, timestamp: timestamp });
-            messagesRef.push({ type: 'system', text: "📞 بدأ " + currentUsername + " مكالمة صوتية.." });
-        } catch (e) {
-            alert("خطأ: يرجى استخدام HTTPS والسماح للميكروفون.");
-        }
-    }
-
-    async function answerCall(offerData) {
-        try {
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            pc = new RTCPeerConnection(servers);
-            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-            toggleCallIcons(true);
-
-            pc.ontrack = (e) => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
-            pc.onicecandidate = (e) => {
-                if (e.candidate) callRef.push({ type: 'candidate', from: currentUsername, candidate: e.candidate.toJSON(), timestamp: Date.now() });
-            };
-
-            await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offerData.sdp }));
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            
-            callRef.push({ type: 'answer', from: currentUsername, to: offerData.from, sdp: answer.sdp, timestamp: Date.now() });
-        } catch (e) {
-            alert("فشل الاتصال بالميكروفون.");
-        }
-    }
-
-    function endCall(notify = true) {
-        if (pc) { pc.close(); pc = null; }
-        if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; }
+        pc = new RTCPeerConnection(servers);
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
         
-        if (notify && callRef) {
-            callRef.remove(); // تنظيف البيانات من Firebase تماماً
-            messagesRef.push({ type: 'system', text: "🚫 تم إنهاء المكالمة بواسطة " + currentUsername });
-        }
-        toggleCallIcons(false);
+        pc.onicecandidate = e => {
+            if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()});
+        };
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        callRef.push({type: "offer", from: currentUsername, sdp: offer});
+        alert("جاري الاتصال...");
     }
 
-    function toggleCallIcons(isCalling) {
-        document.getElementById('startCallIcon').style.display = isCalling ? 'none' : 'inline-block';
-        document.getElementById('endCallIcon').style.display = isCalling ? 'inline-block' : 'none';
+    async function answerCall(offer) {
+        pc = new RTCPeerConnection(servers);
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+        pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
+        pc.onicecandidate = e => {
+            if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()});
+        };
+
+        await pc.setRemoteDescription(new RTCSessionDescription(offer.sdp));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        callRef.push({type: "answer", from: currentUsername, to: offer.from, sdp: answer});
     }
 
     function sendMessage() {
         const input = document.getElementById("msgInput");
-        if (input.value.trim() !== "" && messagesRef) {
+        if(input.value && messagesRef) {
             const now = new Date();
-            messagesRef.push({ user: currentUsername, text: input.value, type: 'text', time: now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0') });
+            messagesRef.push({user: currentUsername, text: input.value, time: now.getHours()+":"+now.getMinutes()});
             input.value = "";
         }
     }
-
-    function sendImageUrl() {
-        const url = prompt("الصق رابط الصورة هنا:");
-        if(url && messagesRef) {
-            const now = new Date();
-            messagesRef.push({ user: currentUsername, url: url, type: 'image', time: now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0') });
-        }
-    }
-
-    document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
 </script>
 </body>
 </html>
