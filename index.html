@@ -92,7 +92,7 @@
 
     function checkMasterPass() {
         if(document.getElementById('master-pass-input').value === "HalaMadrid1536") {
-            localStorage.setItem("master_auth", "true"); // تذكر الدخول
+            localStorage.setItem("master_auth", "true");
             document.getElementById('login-card').classList.add('hidden');
             if(!myName) document.getElementById('user-card').classList.remove('hidden');
             else document.getElementById('rooms-card').classList.remove('hidden');
@@ -199,14 +199,25 @@
     }
 
     function endCall() { if(callRef) callRef.remove(); stopAllMedia(); }
-    function stopAllMedia() { if(pc) pc.close(); if(localStream) localStream.getTracks().forEach(t => t.stop()); updateCallUI(false); }
+    
+    function stopAllMedia() { 
+        if(pc) pc.close(); 
+        if(localStream) {
+            localStream.getTracks().forEach(track => {
+                track.stop();
+                track.enabled = false;
+            });
+        }
+        localStream = null;
+        updateCallUI(false); 
+    }
+
     function updateCallUI(c) { 
         document.getElementById("btn-start").classList.toggle("hidden", c);
         document.getElementById("btn-end").classList.toggle("hidden", !c);
     }
 
     window.onload = () => {
-        // فحص الرمز الملكي المسجل
         if(localStorage.getItem("master_auth") === "true") {
             document.getElementById('login-card').classList.add('hidden');
             if(!myName) document.getElementById('user-card').classList.remove('hidden');
