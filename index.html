@@ -126,15 +126,11 @@
         msgRef = firebase.database().ref("enc_msgs/" + path);
         callRef = firebase.database().ref("calls/" + path);
 
-        msgRef.on("child_added", s => {
-            const d = s.val(), id = s.key;
-            let content = d.type === 'audio' ? `<audio controls src="${d.data}"></audio>` : d.text;
-            const html = `<div id="msg-${id}" class="message ${d.user === myName ? 'sent' : 'received'}" onclick="deleteMessage('${id}', '${d.user}')">
-                <small style="color:${getUserColor(d.user)}">${d.user}</small>${content}</div>`;
-            document.getElementById("chat-box").insertAdjacentHTML('beforeend', html);
-            document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+        msgRef.on("child_added", s => { renderMsg(s); });
+        msgRef.on("child_changed", s => { 
+            let el = document.getElementById("msg-" + s.key);
+            if(s.val().deleted && el) el.remove(); // حذف من الشاشة عند تحديث الحالة
         });
-        msgRef.on("child_removed", s => { let el = document.getElementById("msg-"+s.key); if(el) el.remove(); });
 
         callRef.on("child_added", async s => {
             const d = s.val();
@@ -145,11 +141,29 @@
         callRef.on("child_removed", () => { document.getElementById('call-ui').classList.add('hidden'); stopAllMedia(); });
     }
 
-    function deleteMessage(id, user) { if(user === myName && confirm("حذف؟")) msgRef.child(id).remove(); }
+    function renderMsg(s) {
+        const d = s.val(), id = s.key;
+        if(d.deleted) return; // لا تعرض الرسالة إذا كانت محذوفة منطقياً
+
+        let content = d.type === 'audio' ? `<audio controls src="${d.data}"></audio>` : d.text;
+        const html = `<div id="msg-${id}" class="message ${d.user === myName ? 'sent' : 'received'}" onclick="deleteMessage('${id}', '${d.user}')">
+            <small style="color:${getUserColor(d.user)}">${d.user}</small>${content}</div>`;
+        document.getElementById("chat-box").insertAdjacentHTML('beforeend', html);
+        document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+    }
+
+    // الدالة المعدلة: تخفي الرسالة من الجميع لكن تتركها في فايرباز
+    function deleteMessage(id, user) { 
+        if(user === myName && confirm("حذف الرسالة نهائياً من المحادثة؟")) {
+            // تحديث الرسالة في فايرباز بإضافة علامة deleted: true
+            // هذا يجعلها تختفي عند الجميع وللأبد من التطبيق، لكن تبقى البيانات في فايرباز
+            msgRef.child(id).update({ deleted: true });
+        }
+    }
 
     function sendText() {
         let i = document.getElementById("msgInput"), v = i.value.trim();
-        if(v) { msgRef.push({user: myName, text: v, type: 'text'}); i.value = ""; }
+        if(v) { msgRef.push({user: myName, text: v, type: 'text', deleted: false}); i.value = ""; }
     }
 
     async function toggleRecord() {
@@ -165,7 +179,7 @@
                 mediaRec.onstop = () => {
                     const reader = new FileReader();
                     reader.readAsDataURL(new Blob(chunks, { type: options.mimeType }));
-                    reader.onloadend = () => msgRef.push({ user: myName, type: 'audio', data: reader.result });
+                    reader.onloadend = () => msgRef.push({ user: myName, type: 'audio', data: reader.result, deleted: false });
                     stream.getTracks().forEach(t => t.stop());
                 };
                 mediaRec.start(); btn.classList.add("recording");
@@ -199,15 +213,9 @@
     }
 
     function endCall() { if(callRef) callRef.remove(); stopAllMedia(); }
-    
     function stopAllMedia() { 
         if(pc) pc.close(); 
-        if(localStream) {
-            localStream.getTracks().forEach(track => {
-                track.stop();
-                track.enabled = false;
-            });
-        }
+        if(localStream) localStream.getTracks().forEach(t => t.stop());
         localStream = null;
         updateCallUI(false); 
     }
