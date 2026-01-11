@@ -17,7 +17,11 @@
         footer { background: #202c33; padding: 12px; display: flex; gap: 8px; align-items: center; }
         #msgInput { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #2a3942; color: white; outline: none; }
         .send-btn { background: #00a884; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        /* أزرار الاتصال */
         .call-btn { color: #00a884; font-size: 22px; cursor: pointer; }
+        .end-call-btn { color: #ea0038; font-size: 22px; cursor: pointer; display: none; margin-right: 15px; }
+
         #overlay { position: fixed; inset: 0; background: #0b141a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .modal-card { background: #222e35; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #3b4a54; width: 300px; }
         .modern-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #3b4a54; background: #2a3942; color: white; }
@@ -29,8 +33,8 @@
 <div id="overlay">
     <div id="step-name" class="modal-card">
         <i class="fas fa-user-circle" style="font-size: 50px; color: #00a884;"></i>
-        <h2>اسمك</h2>
-        <input type="text" id="username-input" class="modern-input">
+        <h2>أهلاً بك يا سيد</h2>
+        <input type="text" id="username-input" class="modern-input" placeholder="اسمك المستعار">
         <button onclick="saveUsername()" style="background:#00a884; color:white; padding:10px 20px; border:none; border-radius:20px;">متابعة</button>
     </div>
     <div id="step-private" class="modal-card hidden">
@@ -42,16 +46,18 @@
 </div>
 
 <header>
-    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px;">خروج</button>
+    <button onclick="location.reload()" style="background:#ea0038; border:none; color:white; border-radius:15px; padding:5px 12px; cursor:pointer;">خروج</button>
     <div id="room-display">الرئيسية</div>
-    <i class="fas fa-phone-alt call-btn" onclick="startCall()"></i>
+    <div>
+        <i id="endCallBtn" class="fas fa-phone-slash end-call-btn" onclick="endCall()"></i>
+        <i id="startCallBtn" class="fas fa-phone-alt call-btn" onclick="startCall()"></i>
+    </div>
 </header>
 
 <div id="chat-box"></div>
 <audio id="remoteAudio" autoplay></audio>
 
 <footer>
-    <button class="icon-btn" style="background:none; border:none; color:#8696a0; font-size:20px;" onclick="sendImageUrl()"><i class="fas fa-image"></i></button>
     <input type="text" id="msgInput" placeholder="اكتب رسالة...">
     <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
 </footer>
@@ -81,6 +87,8 @@
     function joinPrivate() {
         let roomName = document.getElementById('room-name-input').value.trim();
         let roomPass = document.getElementById('room-pass-input').value.trim();
+        if(!roomName || !roomPass) return alert("أدخل بيانات الغرفة");
+
         const roomRef = firebase.database().ref("room_settings/" + roomName);
         roomRef.once('value').then(s => {
             document.getElementById("overlay").classList.add("hidden");
@@ -97,13 +105,11 @@
         messagesRef.on("child_added", s => {
             const d = s.val();
             const isMe = d.user === currentUsername;
-            const time = d.time || "";
-            document.getElementById("chat-box").innerHTML += `<div class="message ${isMe?'sent':'received'}"><small>${d.user}</small><br>${d.text}<span class="msg-time">${time}</span></div>`;
+            document.getElementById("chat-box").innerHTML += `<div class="message ${isMe?'sent':'received'}"><small>${d.user}</small><br>${d.text}<span class="msg-time">${d.time||''}</span></div>`;
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
     }
 
-    // --- نظام الاتصال البسيط الذي عمل معك سابقاً ---
     function setupCall(path) {
         callRef = firebase.database().ref("calls/" + path);
         callRef.on("child_added", async s => {
@@ -111,51 +117,79 @@
             if(d.type === "offer" && d.from !== currentUsername) {
                 if(confirm("مكالمة من " + d.from)) answerCall(d);
             }
-            if(d.type === "answer" && d.to === currentUsername) {
+            if(d.type === "answer" && d.to === currentUsername && pc) {
                 pc.setRemoteDescription(new RTCSessionDescription(d.sdp));
             }
-            if(d.type === "candidate" && d.from !== currentUsername) {
+            if(d.type === "candidate" && d.from !== currentUsername && pc) {
                 pc.addIceCandidate(new RTCIceCandidate(d.candidate));
             }
+        });
+
+        // تنظيف الواجهة إذا مسح الطرف الآخر بيانات المكالمة
+        callRef.on("child_removed", () => {
+            stopMedia();
         });
     }
 
     async function startCall() {
-        pc = new RTCPeerConnection(servers);
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-        
-        pc.onicecandidate = e => {
-            if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()});
-        };
+        try {
+            pc = new RTCPeerConnection(servers);
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+            
+            document.getElementById("startCallBtn").style.display = "none";
+            document.getElementById("endCallBtn").style.display = "inline-block";
 
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        callRef.push({type: "offer", from: currentUsername, sdp: offer});
-        alert("جاري الاتصال...");
+            pc.onicecandidate = e => {
+                if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()});
+            };
+
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            callRef.push({type: "offer", from: currentUsername, sdp: offer});
+        } catch (e) { alert("تأكد من الميكروفون والـ HTTPS"); }
     }
 
     async function answerCall(offer) {
-        pc = new RTCPeerConnection(servers);
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+        try {
+            pc = new RTCPeerConnection(servers);
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
 
-        pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
-        pc.onicecandidate = e => {
-            if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()});
-        };
+            document.getElementById("startCallBtn").style.display = "none";
+            document.getElementById("endCallBtn").style.display = "inline-block";
 
-        await pc.setRemoteDescription(new RTCSessionDescription(offer.sdp));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        callRef.push({type: "answer", from: currentUsername, to: offer.from, sdp: answer});
+            pc.ontrack = e => { document.getElementById("remoteAudio").srcObject = e.streams[0]; };
+            pc.onicecandidate = e => {
+                if(e.candidate) callRef.push({type: "candidate", from: currentUsername, candidate: e.candidate.toJSON()});
+            };
+
+            await pc.setRemoteDescription(new RTCSessionDescription(offer.sdp));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            callRef.push({type: "answer", from: currentUsername, to: offer.from, sdp: answer});
+        } catch (e) { alert("خطأ في الميكروفون"); }
+    }
+
+    function endCall() {
+        if(callRef) callRef.remove(); // مسح البيانات من Firebase
+        stopMedia();
+    }
+
+    function stopMedia() {
+        if(pc) { pc.close(); pc = null; }
+        if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+        document.getElementById("startCallBtn").style.display = "inline-block";
+        document.getElementById("endCallBtn").style.display = "none";
+        document.getElementById("remoteAudio").srcObject = null;
     }
 
     function sendMessage() {
         const input = document.getElementById("msgInput");
         if(input.value && messagesRef) {
             const now = new Date();
-            messagesRef.push({user: currentUsername, text: input.value, time: now.getHours()+":"+now.getMinutes()});
+            const time = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0');
+            messagesRef.push({user: currentUsername, text: input.value, time: time});
             input.value = "";
         }
     }
